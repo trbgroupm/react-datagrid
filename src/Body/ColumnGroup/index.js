@@ -29,8 +29,9 @@ export default class ColumnGroup extends Component {
       isMultiSort,
       sortable,
       sortInfo,
+      data,
     } = props
-    
+
     const style = assign({}, props.style, {
        // height: viewportHeight,
       }
@@ -48,27 +49,28 @@ export default class ColumnGroup extends Component {
     }
 
     const className = join(
-        'react-datagrid__colum-group', 
+        'react-datagrid__colum-group',
         props.className
       )
 
     const innerWrapperStyle = {
-      transform: `translate3d(0,${innerWrapperOffset}px, 0)` 
+      transform: `translate3d(0,${innerWrapperOffset}px, 0)`
     }
 
-    return <div 
-      {...props} 
-      className={className} 
-      style={style} 
+    return <div
+      {...props}
+      className={className}
+      style={style}
       data={null}
       onScroll={this.onScroll}
-    > 
+    >
       {
         !hideHeader
         &&
-        <Header 
-          columns={columns} 
-          minWidth={minWidth} 
+        <Header
+          data={data}
+          columns={columns}
+          minWidth={minWidth}
           onHeaderCellClick={props.onHeaderCellClick}
           isMultiSort={isMultiSort}
           sortable={sortable}
@@ -77,7 +79,7 @@ export default class ColumnGroup extends Component {
         />
       }
       <div className="react-datagrid__colum-group__body">
-        <div 
+        <div
           className="react-datagrid__colum-group__body__inner-wrapper"
           style={innerWrapperStyle}
         >

@@ -24,7 +24,7 @@ export default class Header extends Component {
       columns,
       minWidth
     } = props
-
+    console.log('render header', props)
     const className = join('react-datagrid__colum-group__header', props.className)
     const style = assign({}, props.style)
 
@@ -39,8 +39,8 @@ export default class Header extends Component {
     return <Flex
         {...props}
         ref="header"
-        wrap={false} 
-        className={className} 
+        wrap={false}
+        className={className}
         data={null}
         style={style}
       >
@@ -63,7 +63,7 @@ export default class Header extends Component {
         sort,
         index,
       } = column
-      
+
       let cellSortInfo = null
 
       if (sortable && sortInfo) {
@@ -74,7 +74,7 @@ export default class Header extends Component {
           cellSortInfo = sortInfo.index === index? sortInfo : null
         }
       }
-  
+
       let value
       if (title) {
         value = title
@@ -83,9 +83,9 @@ export default class Header extends Component {
       }
 
       return <Cell
-        {...column} 
-        key={index} 
-        headerCell 
+        {...column}
+        key={index}
+        headerCell
         value={value}
         onClick={this.props.onHeaderCellClick}
         sortInfo={cellSortInfo}

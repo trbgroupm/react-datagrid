@@ -34,21 +34,24 @@ class DataGrid extends Component {
 
   componentDidMount(){
     const dataGridNode = findDOMNode(this.refs.dataGrid)
-  
+
     // load data
     this.loadSourceData(this.props.dataSource, this.props)
   }
 
   componentWillReceiveProps(nextProps, nextState){
-    
+
     // data is cached in state
     // needs to be updated if dataSource changes
+
     if (this.props.dataSource !== nextProps.dataSource) {
       this.loadSourceData(nextProps.dataSource, nextProps)
     }
 
-    if (this.props.sortInfo !== nextProps.sortInfo) { 
-      this.setData(null, {sortInfo: nextProps.sortInfo})
+    if (this.props.sortInfo != nextProps.sortInfo) {
+      setTimeout(() => {
+        this.setData(null, {sortInfo: nextProps.sortInfo})
+      }, 0)
     }
   }
 
@@ -63,8 +66,8 @@ class DataGrid extends Component {
       children,
     } = preparedProps
 
-    return <Flex 
-      {...this.props} 
+    return <Flex
+      {...this.props}
       ref="dataGrid"
       className={className}
       column
@@ -80,7 +83,7 @@ class DataGrid extends Component {
         onRowFocus={this.onRowFocus}
         onHeaderCellClick={this.onHeaderCellClick}
       />
-      <NavigationHelper 
+      <NavigationHelper
         ref="NavigationHelper"
         onArrowUp={this.onArrowUp}
         onArrowDown={this.onArrowDown}
@@ -89,9 +92,9 @@ class DataGrid extends Component {
   }
 
   renderLoadMask(){
-    return <LoadMask 
-      visible={true} 
-      className="react-datagrid__load-mask" 
+    return <LoadMask
+      visible={true}
+      className="react-datagrid__load-mask"
     />
   }
 
@@ -124,8 +127,8 @@ class DataGrid extends Component {
     if (!this.p.isActiveIndexControlled) {
       const newIndex = this.state.activeIndex - 1
 
-      if (newIndex >= 0) {   
-        this.changeActiveIndex(newIndex, rowProps) 
+      if (newIndex >= 0) {
+        this.changeActiveIndex(newIndex, rowProps)
       }
     }
   }
@@ -135,7 +138,7 @@ class DataGrid extends Component {
       const newIndex = this.state.activeIndex + 1
 
       if (newIndex !== this.p.data.length) {
-        this.changeActiveIndex(newIndex, rowProps) 
+        this.changeActiveIndex(newIndex, rowProps)
       }
     }
   }
@@ -167,14 +170,14 @@ class DataGrid extends Component {
 
 
   /**
-   * On single sort when you click on a sortable column it will begin 
+   * On single sort when you click on a sortable column it will begin
    * to change between it's three states
    * if you click on a new column the sortInfo overwritten with the
    * new sortInfo detemined by the new column
    */
   handleSingleSort(column){
     const newSortInfo = this.getNewSortInfoDescription(column, (this.p.sortInfo && this.p.sortInfo.dir))
-    
+
     // this.setState({
     //   sortInfo: newSortInfo
     // })
@@ -348,6 +351,7 @@ class DataGrid extends Component {
       sortInfo = preparedProps.sortInfo
     }
 
+
     if (sortInfo) {
       newDataState.data = this.sortData(sortInfo, [...data])
     } else {
@@ -372,7 +376,7 @@ class DataGrid extends Component {
   getSelected(){
     return this.isSelectionControlled()?
            this.props.selected :
-           this.state.selected  
+           this.state.selected
   }
 
   getActiveIndex(){
@@ -401,9 +405,9 @@ class DataGrid extends Component {
     if (selected === undefined) {
       selectionEmptry = true
     }
-  
+
     if (typeof selected === 'object' && selected !== null) {
-      selectionEmptry = Object.keys(selected).length === 0     
+      selectionEmptry = Object.keys(selected).length === 0
     }
 
     return selectionEmptry
@@ -415,9 +419,9 @@ class DataGrid extends Component {
    * it is helpful to have a single point of access
    */
   prepareProps(props, state){
-    const loading = props.loading == undefined? 
+    const loading = props.loading == undefined?
                     this.state.loading :
-                    props.loading 
+                    props.loading
 
     const className = join(props.className, 'react-datagrid')
     const selected = this.getSelected()
@@ -503,7 +507,7 @@ DataGrid.propTypes = {
   loading: React.PropTypes.bool,
   hideHeader: PropTypes.bool,
   defaultLoading : React.PropTypes.bool,
-  
+
 
   // row config
   onRowMouseEnter: PropTypes.func,
@@ -520,7 +524,7 @@ DataGrid.propTypes = {
 
   // scrolling and scroll
   onScroll: PropTypes.func,
-  onScrollBottom: PropTypes.func, 
+  onScrollBottom: PropTypes.func,
   scrollToIndex: PropTypes.func,
   scrollToId: PropTypes.func,
   scrollbarWidth: PropTypes.number,
@@ -553,7 +557,7 @@ DataGrid.propTypes = {
 
   // navigation
   activeIndex: PropTypes.number,
-  defaultActiveIndex: PropTypes.number,  
+  defaultActiveIndex: PropTypes.number,
   onActiveIndexChange: PropTypes.func,
 
 
@@ -569,7 +573,7 @@ DataGrid.propTypes = {
 
     React.Children.map(children, (child) => {
       if (
-          !child || !child.props || 
+          !child || !child.props ||
           (!child.props.isColumnGroup || !child.props.isColumn)
         ) {
         return new Error('The only children allowed of Datagrid are ColumnGroup and Column')
@@ -587,7 +591,7 @@ DataGrid.propTypes = {
 
     if (
         dataSource !== null &&
-        !Array.isArray(dataSource) && 
+        !Array.isArray(dataSource) &&
         !(dataSource && dataSource.then)
       ) {
       return new Error(`dataSource must be an array, null or a promise.`)
@@ -605,7 +609,7 @@ export default DataGrid
 import Column from './Column'
 
 // you can configurate the grid using an array of configuration objects
-// or declaratively (jsx) using ColumnGroup and Column. 
+// or declaratively (jsx) using ColumnGroup and Column.
 export {
   ColumnGroup,
   Column // Column is a dummy componnet only used for configuration
