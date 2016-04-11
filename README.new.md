@@ -36,7 +36,7 @@ $ npm run dev
 
 # Documentation
 
-## General 
+## General
 Some statement about datagrid
 
 
@@ -119,7 +119,7 @@ var sortInfo =  [
 ```
 
 
-## Row 
+## Row
 Rows
 
 #### Props
@@ -130,11 +130,11 @@ Rows
 `renderRowPlaceholder` | Function | - | custom render function for placeholder, to take efect `rowPlaceholder` must be `true`
 `rowPlaceholderDelay` | Number | 300 | time in ms, that has to pass from you start scrolling to activate rowPlaceholder
 `rowRef` | String | realIndex | controls what index to be used as a ref for row, `realIndex` uses index of the piece of data that is used for the row from array of data, `renderIndex` uses the nth position of rendered rows (we render only the visible rows + extraRows). The difference is in the way react treats rows, in `renderIndex` the rows will not change, their contents will change on each render. In `realIndex` when rows are moved out of view, some will get unmounted and some mounted, and the rows will move from top to bottom or from bottom to top. If you use ColumnGropups you can overwrite the global seting directly on the ColumnGroup.
-`onRowMouseLeave(event, rowProps)` | Function | - | row event handler onMouseEnter, event parameter is react event 
-`onRowMouseEnter(event, rowProps)` | Function | - | row event handler onMouseEnter, event parameter is react event 
+`onRowMouseLeave(event, rowProps)` | Function | - | row event handler onMouseEnter, event parameter is react event
+`onRowMouseEnter(event, rowProps)` | Function | - | row event handler onMouseEnter, event parameter is react event
 `zebraRows` | Bool | true | controll `react-datagrid__row---odd` and `eact-datagrid__row---even` classNames on rows.
 `rowProps` | Object | - | Object of props to be merged to row component
-`renderRow(rowProps)| Function | - | you can use this function to customize render logic of rows, see more [here](#render-row) 
+`renderRow(rowProps)| Function | - | you can use this function to customize render logic of rows, see more [here](#render-row)
 
 #### Render
 * `renderRow(rowProps): Function`
@@ -152,14 +152,14 @@ Rows
 
 Columns can be defined as:
 - an array of objects describing each column.
-- using `<Column />` component, as children of `DataGrid` or `ColumnGroup` 
+- using `<Column />` component, as children of `DataGrid` or `ColumnGroup`
 
 #### Props
 |Prop|Type|Default|Description
 --- | --- | --- | ---
 `name`| String | - | specifies what piece of data to be rendered in that column
 `value`| String | `name`| the default value to be rendered (equals to data[column.name]).
-`title`| String\|ReactElement\|Function| `name` | a title to show in the header. If not specified, a humanized version of `name` will be used. Can be a string or anything that React can render, so you can customize it as you please.
+`title`| String\|ReactElement\|Function| `name` | a title to show in the header. If not specified, a humanized version of `name` will be used. Can be a string or anything that React can render, so you can customize it as you please. For more information read [Column.title](#columntitle) section.
 `width`| Int\|String| - |specify the width of the column.
 `onScroll(scrollTop, event)`| Function | - | On scroll event handler.
 `style`| Object | - |if you want cells in this column to be have a custom style.
@@ -202,11 +202,22 @@ var columns = [
 <DataGrid idProperty="id" dataSource={data} columns={columns} />
 ```
 
+### Column.title
+If is a function it will be called with an object with the following keys:
+- column - current column information
+- columnSortInfo - current column sort info
+- columns - all columns
+- data
+- isMultiSort - is grid has mutisort enabled
+- minWidth - minWidth calculated for the current column
+- sortInfo - all sortinfo
+- sortable - flag if datagird is sortable
+
 #### Sorting Function
 ```js
 var columns = [
   {
-    name: 'index', 
+    name: 'index',
     render: function(v){return 'Index ' + v},
     sort: function(rowProps, nextRowProps){
       return rowProps - nextRowProps
@@ -223,7 +234,7 @@ var columns = [
 ```js
 var dataSource = [
   {id: 1, name: 'Foo', lastName: 'Bar'},
-  {id: 2, name: 'Bar', lastName: 'Foo'}    
+  {id: 2, name: 'Bar', lastName: 'Foo'}
   ...
 ]
 
@@ -245,11 +256,11 @@ or
 <DataGrid />
 
 ```
-Each column should have a `name` property, and optionally a `title` property. 
+Each column should have a `name` property, and optionally a `title` property.
 The `name` property can be omitted if a render function is specified.
 If no **`title`** property is specified, a humanized version of the column **`name`** will be used.
 
-    
+
 
 ## Column Group Props
 
@@ -267,7 +278,7 @@ Prop|Type|Default|Description
 ```js
 var dataSource = [
   {id: 1, name: 'Foo', lastName: 'Bar'},
-  {id: 2, name: 'Bar', lastName: 'Foo'}    
+  {id: 2, name: 'Bar', lastName: 'Foo'}
   ...
 ]
 

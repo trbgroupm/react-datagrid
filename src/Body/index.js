@@ -24,14 +24,14 @@ import ColumnGroup from './ColumnGroup'
  *               to update we use `react-notify-resize`, to listen to size changes
  * - scrollTop
  * - overRowId: id of the row that has :hover
- * - maxScrollTop: is calculated based on contentHeight 
+ * - maxScrollTop: is calculated based on contentHeight
  *                 (height if all rows would be rendered) + visible area height
  *                 this is updated when data is changed (no of rows changes) or
  *                 bodyHeight changes
  * - isScrolling
  * - isPlaceholderActive: - flag if row placeholder should be rendered
  *                        - it is set after 300ms(by default, controlled with `rowPlaceholderDelay` prop)
- *                          if the `isScrolling` flag is still true  
+ *                          if the `isScrolling` flag is still true
  */
 class Body extends Component {
 
@@ -52,7 +52,7 @@ class Body extends Component {
       isPlaceholderActive: false,
     }
   }
-  
+
   componentDidMount(){
     this.setBodyHeight()
     setTimeout(() => {
@@ -77,8 +77,8 @@ class Body extends Component {
     // - columns
     // - columngrups has changed children or column prop
     const newColumns = this.getNewColumns(nextProps)
-    if (shallowequal(newColumns, this.state.columns)) {
-      const columns = this.getNewColumns(props)
+    if (!shallowequal(newColumns, this.state.columns)) {
+      const columns = this.getNewColumns(nextProps)
       const flatColumns = flatten(columns)
 
       this.setState({
@@ -88,7 +88,7 @@ class Body extends Component {
     }
   }
 
-  
+
   componentWillUpdate(nextProps, nextState){
     if (!this.refs.scroller) {
       return
@@ -108,13 +108,13 @@ class Body extends Component {
   render(){
     const preparedProps = this.p = this.prepareProps(this.props)
     const {
-      data, 
+      data,
       columns,
       loading,
       scrollTop,
       resizeTool
     } = preparedProps
-    
+
     const className = join(
         'react-datagrid__body',
         this.state.isScrolling && 'react-datagrid__body--scrolling'
@@ -122,9 +122,9 @@ class Body extends Component {
 
     const isEmpty = (Array.isArray(data) && data.length === 0) || data === null && !loading
 
-    return <Item  
-      flex 
-      column 
+    return <Item
+      flex
+      column
       className={className}
       data={null}
       ref="body"
@@ -134,7 +134,7 @@ class Body extends Component {
         isEmpty?
           <EmptyText emptyText={this.props.emptyText} />
           :
-          this.renderScroller() 
+          this.renderScroller()
       }
     </Item>
   }
@@ -144,7 +144,7 @@ class Body extends Component {
       return
     }
 
-    return <Scroller 
+    return <Scroller
       ref="scroller"
       contentHeight={this.p.contentHeight}
       headerHeight={this.p.headerHeight}
@@ -195,13 +195,13 @@ class Body extends Component {
     const bodyHeight = this.p.bodyHeight
     let bufferValid = true
 
-    /** 
+    /**
      * we need to buffer rendering
      * only rerender rows when buffer (half of extra rows height) is scrolled
      * and we need to render anoter set of rows
      * cache scrollTop and fromTo
-     * const {from, to} = getDataRangeToRender(bodyHeight, rowHeight, scrollTop, extraRows) 
-    **/ 
+     * const {from, to} = getDataRangeToRender(bodyHeight, rowHeight, scrollTop, extraRows)
+    **/
     if ((Math.abs(this.oldScrollTop - scrollTop - rowHeight) >= buffer) || !this.fromTo) {
       this.fromTo = getDataRangeToRender(bodyHeight, rowHeight, scrollTop, extraRows)
       this.oldScrollTop = scrollTop
@@ -244,7 +244,7 @@ class Body extends Component {
       globalProps: this.props,
       onRowMouseEnter: this.onRowMouseEnter,
       onRowMouseLeave: this.onRowMouseLeave,
-      onRowClick: onRowClick, 
+      onRowClick: onRowClick,
       overRowId: this.state.overRowId,
       onScroll: onColumnGroupScroll,
     }
@@ -253,20 +253,20 @@ class Body extends Component {
      * If no coumnGroup is specified, create a ColumGroup with all passed columns
      */
     if (!children) {
-      return <ColumnGroup 
-        {...columnGroupProps} 
-        columns={columns} 
+      return <ColumnGroup
+        {...columnGroupProps}
+        columns={columns}
         width={'100%'}
-      />  
+      />
     } else {
     /**
      * Children are specified, take each Columngroup and insert props
      */
       return React.Children.map(children, (child, index) => {
          return React.cloneElement(
-            child, 
+            child,
             assign(
-              {}, 
+              {},
               columnGroupProps,
               child.props, // let columngroup props overwrite those passed
               {columns: columns[index]}
@@ -298,7 +298,7 @@ class Body extends Component {
     // remove id if still present
     if (this.state.overRowId === rowProps.id) {
       this.setState({
-        overRowId: null 
+        overRowId: null
       })
     }
 
@@ -319,7 +319,7 @@ class Body extends Component {
       this.setState({
         isScrolling: true
       })
-      
+
       // if it is still scrolling after `rowPlaceholderDelay`ms (defaults to 300ms)
       // set `isPlaceholderActive` to true, to announce that row placeholder can be
       // rendered
@@ -415,7 +415,7 @@ class Body extends Component {
     raf(() => {
       this.setState({
         scrollTop
-      })     
+      })
     })
 
     // trigger scrollbottom
@@ -435,7 +435,7 @@ class Body extends Component {
   }
 
 
-  // set columns depending 
+  // set columns depending
   // - there are ColumnGrups with jsx
   // - Columgroups have a prop columns
   // - Columgroups have children
@@ -472,13 +472,13 @@ class Body extends Component {
       // used to add default props
       normalizedColumns = columns.map(column => <Column {...column} />)
     }
-    
+
     return normalizedColumns
       .map((c, index) => assign({}, c.props, {index: index + startIndex}))
   }
 
   prepareProps(props){
-    const isScrollControlled = props.scrollTop != null 
+    const isScrollControlled = props.scrollTop != null
     const scrollTop = isScrollControlled?
                   props.scrollTop:
                   this.state.scrollTop

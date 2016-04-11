@@ -22,7 +22,8 @@ export default class Header extends Component {
     const {
       width,
       columns,
-      minWidth
+      minWidth,
+      data
     } = props
 
     const className = join('react-datagrid__colum-group__header', props.className)
@@ -77,7 +78,13 @@ export default class Header extends Component {
 
       let value
       if (title) {
-        value = title
+        value = typeof title === 'function'?
+            title(assign({}, props, {
+              column,
+              columnSortInfo: cellSortInfo
+            }))
+            :
+            title
       } else if (name){
         value = humanize(name)
       }
