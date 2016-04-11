@@ -83,7 +83,7 @@ export default class Cell extends Component {
 
     // TODO: don't call renderCell on header cell
     let result
-    if (renderCell) {
+    if (renderCell && !headerCell) {
       result = renderCell({value, data, cellProps})
     }
 

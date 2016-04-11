@@ -26,13 +26,13 @@ const columns = [
     name: 'status',
   } , {
     title: 'Actions',
-    render(value, data, props) {
-      if (props.headerCell){
+    render({value, data, cellProps}) {
+      if (cellProps.headerCell){
         value = 'test'
         return
       }
 
-      props.children = <div>
+      cellProps.children = <div>
         <button>add</button>
         <button>remove</button>
       </div>
@@ -52,21 +52,21 @@ class App extends Component {
   }
 
   render(){
-    return <Flex 
-      column 
-      alignItems="stretch" 
+    return <Flex
+      column
+      alignItems="stretch"
       className="app"
       wrap={false}
       style={{
         height: this.state.height
       }}
     >
-      <h1>  
+      <h1>
         React DataGrid by ZippyUi
       </h1>
 
       <div>
-        <button 
+        <button
           style={{
             marginBottom: 10
           }}
@@ -76,7 +76,7 @@ class App extends Component {
         >
           Add Height
         </button>
-        <button 
+        <button
           style={{
             marginBottom: 10
           }}
@@ -90,6 +90,7 @@ class App extends Component {
 
       <DataGrid
         // defaultActiveIndex={3}
+        hideHeader
         idProperty={'id'}
         dataSource={data}
         columns={columns}

@@ -24,7 +24,7 @@ export default class Header extends Component {
       columns,
       minWidth
     } = props
-    console.log('render header', props)
+
     const className = join('react-datagrid__colum-group__header', props.className)
     const style = assign({}, props.style)
 
