@@ -10,7 +10,7 @@ import gen, { gen2 } from './generate'
 import Perf from 'react-addons-perf'
 
 
-const data = gen2(10000)
+const data = gen2(100000)
 const columns = [
   {
     name: 'name',
@@ -47,8 +47,15 @@ class App extends Component {
 
     this.state = {
       height: 500,
-      sortInfo: {dir: 1, name: "firstName", index: 2}
+      sortInfo: {dir: 1, name: "firstName", index: 2},
+      data: data
     }
+
+    setTimeout(() => {
+      this.setState({
+        data: gen2(100)
+      })
+    }, 5000)
   }
 
   render(){
@@ -92,7 +99,7 @@ class App extends Component {
         // defaultActiveIndex={3}
         hideHeader
         idProperty={'id'}
-        dataSource={data}
+        dataSource={this.state.data}
         columns={columns}
         sortable
         onSortInfoChange={(sortInfo) => this.setState({sortInfo})}
