@@ -60,7 +60,7 @@ class Body extends Component {
     }, 0)
   }
 
-  componentWillReceiveProps(nextProps){
+  componentWillReceiveProps(nextProps, nextState){
     if (nextProps.data === null) {
       this.setState({
         scrollTop: 0
@@ -70,7 +70,13 @@ class Body extends Component {
     if (
         nextProps.contentHeight !== this.props.contentHeight
       ) {
-      this.setMaxScrollTop(nextProps.contentHeight)
+      const newMaxScrollTop = this.setMaxScrollTop(nextProps.contentHeight, nextProps)
+
+      if (newMaxScrollTop < 0) {
+        this.scrollAt(0)
+      } else if (this.state.scrollTop > newMaxScrollTop) {
+        this.scrollAt(newMaxScrollTop)
+      }
     }
 
     // we have to determine if any of the folowig has changed
@@ -86,6 +92,9 @@ class Body extends Component {
         flatColumns
       })
     }
+
+
+
   }
 
 
@@ -357,12 +366,15 @@ class Body extends Component {
     })
   }
 
-  setMaxScrollTop(contentHeight){
+  setMaxScrollTop(contentHeight, props){
+    props = props || this.props
+    const maxScrollTop = (contentHeight || this.props.contentHeight) - this.state.bodyHeight
+
     this.setState({
-      maxScrollTop: (
-          (contentHeight || this.props.contentHeight) - this.state.bodyHeight
-        )
+      maxScrollTop
     })
+
+    return maxScrollTop;
   }
 
   /**
