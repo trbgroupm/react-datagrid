@@ -88,7 +88,7 @@ export default class Cell extends Component {
     }
 
     if (result === undefined){
-      result = <Item {...cellProps} data={null} />
+      result = <Item {...cellProps} title={null} data={null} />
     }
 
     return result
