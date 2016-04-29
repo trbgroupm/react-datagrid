@@ -18,17 +18,17 @@ class Scroller extends Component {
 
   render(){
     const props = this.props
-  
+
     const {
-      itemHeight, 
-      dataLength, 
+      itemHeight,
+      dataLength,
       contentHeight,
       scrollTop,
       height,
       scrollbarWidth,
       hasScroll
     } = props
-    
+
     const scrollContentStyle = {
       height: contentHeight
     }
@@ -43,10 +43,10 @@ class Scroller extends Component {
       contentStyle.maxWidth = `calc(100% - ${scrollbarWidth}px)`
     }
 
-    const scrollerStyle = { 
-      height, 
-      maxHeight: height, 
-      maxWidth: scrollbarWidth, 
+    const scrollerStyle = {
+      height,
+      maxHeight: height,
+      maxWidth: scrollbarWidth,
       minWidth: scrollbarWidth,
       position: 'relative',
       top: this.props.headerHeight
@@ -73,16 +73,16 @@ class Scroller extends Component {
       {
         hasScroll
         &&
-        <div 
+        <div
           ref="scrollbar"
           className="react-datagrid__scroller__scrollbar"
           onScroll={this.onScrollBarScroll}
           style={scrollerStyle}
         >
-          <div 
+          <div
             className="react-datagrid__scroller__scrollbar__content"
-            ref="scrollBarContent" 
-            style={scrollContentStyle} 
+            ref="scrollBarContent"
+            style={scrollContentStyle}
           />
         </div>
       }
@@ -90,13 +90,14 @@ class Scroller extends Component {
   }
 
   // onScroll is triggered indirectly by:
-  // - onWheel 
-  // - onTouch 
+  // - onWheel
+  // - onTouch
   // - onScroll by scrollbar
   onScroll(scrollTop, event){
     if (!this.props.hasScroll) {
       return
     }
+
     const newScrollTop = this.normalizeScrollTop(scrollTop)
 
     if (newScrollTop != this.props.scrollTop) {
@@ -115,24 +116,34 @@ class Scroller extends Component {
     const props = this.props
     const {
       scrollStep,
-      scrollTop
+      scrollTop,
+      maxScrollTop
     } = props
-   
+
     const { deltaY, deltaX } = event
 
-    if (Math.abs(deltaX) < Math.abs(deltaY)) {
-      event.preventDefault()
-    }
 
-   
     let newScrollTop = scrollTop
-    
+
     if (deltaY < 0) {
       newScrollTop += deltaY * scrollStep
     } else {
       newScrollTop += deltaY * scrollStep
     }
-   
+
+    if (
+        Math.abs(deltaX) < Math.abs(deltaY)
+        // don't prevent default when thre is no scroll, or scrollTop === 0 or maxScrollTop
+        &&
+        this.props.hasScroll
+        &&
+        newScrollTop < maxScrollTop
+        &&
+        newScrollTop > 0
+      ) {
+      event.preventDefault()
+    }
+
 
     this.onScroll(newScrollTop)
   }
@@ -151,8 +162,8 @@ class Scroller extends Component {
         }
 
         const newScrollPos = this.initialScrollStart - config.diff.top
-        
-        this.onScroll(newScrollPos, event) 
+
+        this.onScroll(newScrollPos, event)
       },
 
       onDrop: (event, config) => {
@@ -160,8 +171,8 @@ class Scroller extends Component {
       }
     })
   }
-  
-  scrollAt(scrollTop){  
+
+  scrollAt(scrollTop){
     if (this.props.hasScroll) {
       this.refs.scrollbar.scrollTop = this.normalizeScrollTop(scrollTop)
     }
