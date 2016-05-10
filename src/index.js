@@ -176,7 +176,13 @@ class DataGrid extends Component {
    * new sortInfo detemined by the new column
    */
   handleSingleSort(column){
-    const newSortInfo = this.getNewSortInfoDescription(column, (this.p.sortInfo && this.p.sortInfo.dir))
+    // if click on different column must start from begining
+    const newSortInfo = this.getNewSortInfoDescription(column,
+        (
+          this.p.sortInfo && this.p.sortInfo.index ===
+          column.index && this.p.sortInfo.dir
+        )
+      )
 
     // this.setState({
     //   sortInfo: newSortInfo
@@ -211,7 +217,7 @@ class DataGrid extends Component {
   getNewSortInfoDescription(column, dir){
     let newSortInfo = {}
     let newDir
-
+    console.warn('here')
     if (!dir || dir === 0) {
       newDir = 1
     } else if (dir === 1) {
