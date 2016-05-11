@@ -312,3 +312,9 @@ or
 <DataGrid />
 
 ```
+
+
+## Notes
+
+Datagird simulates scroll, it uses `onWheel` and touch events for this.
+If you have an element, that has scroll, inside the grid and don't want the grid to scroll, you have to stop `onWheel` event from propagating (`event.stopPropagation`).
