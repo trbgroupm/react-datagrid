@@ -1,6 +1,6 @@
 {
   "name": "react-datagrid",
-  "version": "3.0.2-beta47",
+  "version": "3.0.4-beta",
   "description": "React DataGrid",
   "main": "lib/index.js",
   "scripts": {
@@ -13,8 +13,8 @@
     "prepublish": "npm run build"
   },
   "peerDependencies": {
-    "react": "^0.14.3",
-    "react-dom": "^0.14.3"
+    "react": ">=0.14.0 || >=15.0.0",
+    "react-dom": ">=0.14.0 || >=15.0.0"
   },
   "repository": {
     "type": "git",
