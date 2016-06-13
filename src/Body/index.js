@@ -1,14 +1,18 @@
 import React, { PropTypes } from 'react'
-import Component from 'react-class'
 import { findDOMNode } from 'react-dom'
-import { Item } from 'react-flex'
-import getDataRangeToRender from './getDataRangeToRender'
+import Component from 'react-class'
+
 import assign from 'object-assign'
-import join from '../utils/join'
 import raf from 'raf'
-import getIndexBy from '../utils/getIndexBy'
+import { Item } from 'react-flex'
 import shallowequal from 'shallowequal'
 import flatten from 'lodash.flatten'
+
+import getDataRangeToRender from './getDataRangeToRender'
+
+import join from '../join'
+
+import getIndexBy from '../utils/getIndexBy'
 
 import Column from '../Column'
 import EmptyText from './EmptyText'

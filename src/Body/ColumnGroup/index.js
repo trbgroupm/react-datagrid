@@ -2,7 +2,7 @@ import React, { PropTypes } from 'react'
 import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
 import assign from 'object-assign'
-import join from '../../utils/join'
+import join from '../../join'
 
 import shallowequal from 'shallowequal'
 import getColumnsWidth from '../../utils/getColumnsWidth'
@@ -112,4 +112,3 @@ ColumnGroup.propTypes = {
   onRowMouseEnter: PropTypes.func,
   onRowMouseLeave: PropTypes.func,
 }
-
