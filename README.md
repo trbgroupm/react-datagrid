@@ -1,14 +1,6 @@
-react-datagrid
-=================
-
-[![Join the chat at https://gitter.im/zippyui/react-datagrid](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/zippyui/react-datagrid?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://circleci.com/gh/zippyui/react-datagrid.svg?style=shield)](https://circleci.com/gh/zippyui/react-datagrid)
+# react-datagrid
 
 > A carefully crafted DataGrid for React
-
-See demo at [zippyui.github.io/react-datagrid](http://zippyui.github.io/react-datagrid)
-
-<a href="http://zippyui.github.io/react-datagrid/#/examples/basic"><img src="./react-datagrid.png" height="400" width="739" /></a>
 
 ## Install
 
@@ -16,139 +8,168 @@ See demo at [zippyui.github.io/react-datagrid](http://zippyui.github.io/react-da
 $ npm install react-datagrid --save
 ```
 
-## Changelog
+## Key Features
 
-See [changelog](./CHANGELOG.md)
+- renders huge amounts of data
+- resizable columns
+- reorderable columns
+- remote data support
+- custom row/cell/column rendering
+- multiple/single selection
+- sorting
+- filtering
+- pagination
+- hideable columns
+- works on mobile
 
-## Features
 
- * renders huge amounts of data
- * resizable columns
- * reorderable columns
- * remote data support
- * custom row/cell/column rendering
- * multiple/single selection
- * sorting
- * filtering
- * pagination
- * hideable columns
- * works on mobile
+## Documentation
 
-## Usage
+## General
 
-Please include the stylesheet `index.css` in your project. If you are using `webpack` with `css-loader`, you can require it: `require('react-datagrid/index.css')`
+ ... Some statement about datagrid ...
 
-#### NOTE:
-For optimal performance, make sure you use `react-datagrid` with the **production version of React**, not the `dev` version. The `dev` version contains a lot of checks, which slow down grid scrolling/rendering quite a bit.
+#### Props
+|Prop|Type|Default|Description
+--- | --- | --- | ---
+`idProperty`| String | - |*(required)* the name of the property where the id is found for each object in the data array
+`dataSource` | Array\|Promise| - | an array of data objects or a promise that when resolved returns an array of data objects.
+`onDataSourceResponse(data)`| Function | - | it is called if `dataSource` is a promise`dataSource.then(onDataSourceResponse, onDataSourceResponse)`
+`columns`| Array | - | an array of columns that are going to be rendered in the grid. Read more on how to configure [columns](#columns).
+`emptyText`| String\|JSX | - | text that appears when dataSource provides an empty dataset
+`hideHeader` | Boolean | false | Set header visibility.
 
-Of course for development, you can use React `dev` version, but this is just a warning so you won't be put off if you see some jank in `dev` mode. It will dissapear when you switch to `production` (minified) version. We are working on this, to make the datagrid usage experience as optimal as possible even in development.
+## Selection
+You can select stuff.
+
+#### Props
+|Prop|Type|Default|Description
+--- | --- | --- | ---
+`selected` | Object\|String\|Number| - | control what items are selected, for multiselect specify an object with it's keys the id's to be selected, an emptry object for no rows selected. For single selection specify a string/number representing the id of the row to be selected.
+`defaultSelected` | Object\|String\|Number| - | uncontrolled version of `selected`, for multiselect specify an object with it's keys the id's to be selected, an emptry object for no rows selected. For single selection specify a string/number representing the id of the row to be selected.
+`onSelectionChange(selected)` | Function | - | event handler called when selection changes, `selected` parameter  for multiselect is an object of the shape `{ id-1: { rowData }, id-2 .. }` and for single select the id, ex `id-`. ID in this case is `rowData[idProperty]`
+
+
+## Navigation
+You can navigate using arrows.
+
+#### Props
+|Prop|Type|Default|Description
+--- | --- | --- | ---
+`activeIndex` | Number | - | index of active row, used for rows navigation
+`defaultActiveIndex` | Number | - | uncontrolled version of `activeIndex`
+`onActiveIndexChange(index)` | Function | - | called when activeIndex changes
+`defaultScrollTop` | Number | - | se default vertical scrollTop position
+
+#### Methods
+* `getActiveIndex()`
+
+
+## Scroll
+Statement about scrolling.
+
+#### Props
+|Prop|Type|Default|Description
+--- | --- | --- | ---
+`onScrollBottom` | Function | - | event handler for when the datagrid is scrolled at the bottom, it can be used as a trigger for infinite loader
+`scrollTop` | Number | - | controls vertical scrollTop position, controlled version of `defaultScrollTop`
+`scrollbarWidth` | Number | 20 | specify the size rezerved for the vertical and horizontal scrollbars
+
+#### Methods
+* `scrollAt(scrollTop)` - you can set scrollTop by calling this method
+* `scrollToIndex(index, config)`- method to scroll to a specific row by `index`, config is used to specify where where the row should be scrolled into view, at the top or the bottom of the scrolling area.
+* `scrollToId(id, config)`| method to scroll to a specific row by `id`, the id is the one specified in `idProperty`. Config is used to specify where where the row should be scrolled into view, at the top or the bottom of the scrolling area.
+
+## Sort
+DataGrid uses [`sorty`](https://www.npmjs.com/package/sorty) utility for sorting.
+For a column to be sortable must fit one of the folowing requirements:
+- must have a `name` prop, so we can use data asociated with it
+- specify a `sort` on column, see [here](sorting-function)
+
+#### Props
+|Prop|Type|Default|Description
+--- | --- | --- | ---
+sortable | Bool | false | make all columns sortable, individual column can be overwritten using columns config
+defaultSortInfo | Object/Array | - | set the initial sort configuration, it can be an object configuration or an array of object configurations, it is the uncontrolled version of sortInfo
+sortInfo | Object/Array | - | controll sort configuration, it can be an object configuration or an array of object configurations
+onSortInfoChange(newSortInfo) | Function | - | called each time sortInfo changes
 
 #### Example
-```jsx
 
-var React = require('react')
-var DataGrid = require('react-datagrid')
-
-var data = [
-  { id: '1', firstName: 'John', lastName: 'Bobson'},
-  { id: '2', firstName: 'Bob', lastName: 'Mclaren'}
-]
-var columns = [
-  { name: 'firstName'},
-  { name: 'lastName'}
+```js
+let sortInfo =  [
+  {name: 'country', dir: 'asc'},
+  {name: 'name', dir: 'asc'}
 ]
 
-<DataGrid idProperty="id" dataSource={data} columns={columns} />
-
+<DataGrid
+  sortInfo={sortInfo}
+/>
 ```
 
-For more examples, see [examples site](http://zippyui.github.io/react-datagrid/#/examples/basic)
 
-## Props
+## Row
+Rows
 
-There are a lot of props that can be configured for the datagrid. We'll try to categorize them so they are easy to follow
+#### Props
+|Prop|Type|Default|Description
+--- | --- | --- | ---
+`rowStyle` | Object/Function | - | You can specify either a style object to be applied to all rows, or a function.    The function is called with (data, props) (so you have access to props.index for example) and is expected to return a style object.
+`rowPlaceholder` | Bool | false | if true while scrolling and buffered items are consumed (we scroll at the end the extra rows rendered) a placeholder is rendered it's columns. It can be set on datagrid or directly on ColumnGroup.
+`renderRowPlaceholder` | Function | - | custom render function for placeholder, to take efect `rowPlaceholder` must be `true`
+`rowPlaceholderDelay` | Number | 300 | time in ms, that has to pass from you start scrolling to activate rowPlaceholder
+`rowRef` | String | realIndex | controls what index to be used as a ref for row, `realIndex` uses index of the piece of data that is used for the row from array of data, `renderIndex` uses the nth position of rendered rows (we render only the visible rows + extraRows). The difference is in the way react treats rows, in `renderIndex` the rows will not change, their contents will change on each render. In `realIndex` when rows are moved out of view, some will get unmounted and some mounted, and the rows will move from top to bottom or from bottom to top. If you use ColumnGropups you can overwrite the global seting directly on the ColumnGroup.
+`onRowMouseLeave(event, rowProps)` | Function | - | row event handler onMouseEnter, event parameter is react event
+`onRowMouseEnter(event, rowProps)` | Function | - | row event handler onMouseEnter, event parameter is react event
+`zebraRows` | Bool | true | controll `react-datagrid__row---odd` and `eact-datagrid__row---even` classNames on rows.
+`rowProps` | Object | - | Object of props to be merged to row component
+`renderRow(rowProps)| Function | - | you can use this function to customize render logic of rows, see more [here](#render-row)
 
-#### Basic
+#### Render
+* `renderRow(rowProps): Function`
+  * `rowProps` : Object - an object with props for the current row - has the following properties:
+     * `className`: String - a className for the cell.
+     * `children`: JSX - row cells.
+     * `style` : object - style for the row.
 
- * `dataSource`: Array/String/Function/Promise - for local data, an array of object to render in the grid. For remote data, a string url, or a function that returns a promise.
- * `idProperty`: String - the name of the property where the id is found for each object in the data array
- * `columns`: Array - an array of columns that are going to be rendered in the grid
+#### rowProps
+* `rowProps.overClassName` - a css class name to be applied when mouse is over the row
+* `rowProps.selectedClassName`
+* `rowProps.className`
 
-  Each column should have a `name` property, and optionally a `title` property. If no `title` property is specified, a humanized version of the column `name` will be used.
+## Columns
 
-  * `name`: String
-  * `title`: String/ReactElement - a title to show in the header. If not specified, a humanized version of `name` will be used. Can be a string or anything that React can render, so you can customize it as you please.
-  * `render`: Function - if you want custom rendering, specify this property
+Columns can be defined as:
+- an array of objects describing each column.
+- using `<Column />` component, as children of `DataGrid` or `ColumnGroup`
 
-    ```jsx
-    var columns = [
-      { name: 'index', render: function(v){return 'Index ' + v} }
-    ]
-    ```
+#### Props
+|Prop|Type|Default|Description
+--- | --- | --- | ---
+`name`| String | - | specifies what piece of data to be rendered in that column
+`value`| String | `name`| the default value to be rendered (equals to data[column.name]).
+`title`| String\|ReactElement\|Function| `name` | a title to show in the header. If not specified, a humanized version of `name` will be used. Can be a string or anything that React can render, so you can customize it as you please. For more information read [Column.title](#columntitle) section.
+`width`| Int\|String| - |specify the width of the column.
+`onScroll(scrollTop, event)`| Function | - | On scroll event handler.
+`style`| Object | - |if you want cells in this column to be have a custom style.
+ `textAlign`| String |-| one of 'left', 'right', 'center'. It will add one of the folowing classes: <br> `react-datagrid__cell--align-right`, <br> `react-datagrid__cell--align-left`, <br>`react-datagrid__cell--align-center`
+ `render` | Function| - |if you want custom rendering, specify this property. Parameters taken: `render(value, data, cellProps)`. For more information read [Column.render](#columnrender) section.
+ `sortable` | Bool | - | controll if a column is sortable or not, see [more](#sort-props)
+`className`| String | - | add a custom className on each cell in that column, only applied on cells inside body
+`titleClassName` | String | - | add a custom className on header-column
 
-  * `style`: Object - if you want cells in this column to be have a custom style
-  * `textAlign`: String - one of 'left', 'right', 'center'
+### Column.render
+Render takes a config object parameter with the keys: `value`, `data` and `cellProps`.
 
-#### Sorting
+* `data`: Object - The corresponding data object for the current row.
+* `cellProps`: Object - An object with props for the current cell - has the following properties:
+  *  `value`: String - the default value to be rendered (equals to data[column.name]).
+  *  `className`: String - a className for the cell.
+  *  `children`: String, JSX - defaults to `value`, reprezents content of the cell.
+  *  `style`: Object - style for the cell.
+  *  `headerCell`: Bool - if it is  acolumn (cell in header)
 
-Sorting the data array is not done by the grid. You can however pass in sort info so the grid renders with sorting icons as needed
-
- * onSortChange: Function(sortInfo)
- * sortInfo: Array - an array with sorting information
-
-  Example
-  ```jsx
-  var sortInfo = [{name: 'firstName', dir: 'asc'}]
-  var sorty = require('sorty')
-  //sorty is a package which sorts an array on multiple properties
-
-  function sort(arr){
-    return sorty(sortInfo, arr)
-  }
-
-  function onSortChange(info){
-    sortInfo = info
-    data = sort(data)
-    //now refresh the grid
-  }
-
-  var data = [...]
-
-  data = sort(data)
-  <DataGrid
-    sortInfo={sortInfo}
-    onSortChange={onSortChange}
-    dataSource={data} idProperty='id' columns={columns} />
-  ```
-
-#### Columns
-
-##### Column styling
-
-Column customization/styling can be done with different properties on the column object:
-
-* `style`: Object - a style object to be applied to all cells in this column
-* `textAlign`: String - one of 'left', 'right', 'center'
-* `className`: String - a className to be applied to all cells in this column.
-* `render`: Function(value, data, cellProps) - if you want custom rendering, specify this property
-
-```jsx
-  var columns = [
-    { name: 'index', render: function(v){return 'Index ' + v} }
-  ]
-```
-
-The `column.render` function is called with 3 args:
-
-* value - the default value to be rendered (equals to `data[column.name]`)
-* data - the corresponding data object for the current row
-* cellProps - an object with props for the current cell - has the following properties:
-  * rowIndex - the index of the row
-  * index    - the index of the column
-  * style    - a style for the cell
-  * className - a className for the cell
-
-Example:
+**Example:**
 
 ```jsx
 var data = [...]
@@ -170,94 +191,130 @@ var columns = [
 <DataGrid idProperty="id" dataSource={data} columns={columns} />
 ```
 
-##### Column showing/hiding
+### Column.title
+If is a function it will be called with an object with the following keys:
+- column - current column information
+- columnSortInfo - current column sort info
+- columns - all columns
+- data
+- isMultiSort - is grid has mutisort enabled
+- minWidth - minWidth calculated for the current column
+- sortInfo - all sortinfo
+- sortable - flag if datagird is sortable
 
-When a column is shown/hidden, you can be notified using the `onColumnVisibilityChange` callback prop.
-
- * `onColumnVisibilityChange`: Function(column, visibility)
-
-You can specify a column is visible/hidden with the following props on column objects:
-
- * defaultVisible: Boolean
- * visible: Boolean - controlled (which means you have to manually set column visibility when it changes, by using `onColumnVisibilityChange`)
-
-If you prefer to use the "hidden" alternatives, you can use `defaultHidden` and `hidden`.
-
-#####  Column reordering
-
-If you want to enable column reordering, just specify the `onColumnOrderChange` prop on the grid:
-
-* onColumnOrderChange: Function(index, dropIndex)
-
-  Example
-  ```jsx
-  function handleColumnOrderChange(index, dropIndex){
-    var col = columns[index]
-    columns.splice(index, 1) //delete from index, 1 item
-    columns.splice(dropIndex, 0, col)
-    this.setState({})
-  }
-
-  <DataGrid onColumnOrderChange={handleColumnOrderChange} />
-  ```
-
-### Rows
-
-#### Styling
-
- * `rowStyle`: Object/Function - you can specify either a style object to be applied to all rows, or a function. The function is called with `(data, props)` (so you have access to `props.index` for example) and is expected to return a style object.
-
- * `rowProps`: Object - props to be passed to all rows
-    - `rowProps.overClassName` - a css class name to be applied when mouse is over the row
-    - `rowProps.selectedClassName`
-    - `rowProps.className`
-
- * `rowFactory`: Function - a factory function for rows. It can return `undefined` if you only want to change the `props` object passed to the function and rely on the default rendering.
+#### Sorting Function
+```js
+var columns = [
+  {
+    name: 'index',
+    render: function(v){return 'Index ' + v},
+    sort: function(rowProps, nextRowProps){
+      return rowProps - nextRowProps
+    }
+  },
+  {name: 'firstName'},
+  {name: 'lastName'}
+]
+```
 
 
-#### Remote data
+#### Example
 
- * dataSource: String/Function/Promise if you specify a url to load remote data from, by default, pagination props are appended to the url as query params (pageSize, skip).
-
-For an example, see [examples/restore-grid-state](http://zippyui.github.io/react-datagrid#/examples/restore-grid-state)
-
-#### Pagination
-
- When you have remote data, pagination is setup by default. If you want to disable pagination, specify the `pagination` prop with a `false` value.
-
- * pagination: Boolean
- * defaultPageSize: Number
- * pageSize: Number - controlled alternative for `defaultPageSize`. When `pageSize` changes, `onPageSizeChange(pageSize)` is called
- * defaultPage: Number
- * page: Number - controlled alternative for `defaultPage`. When `page` changes, `onPageChange(page)` is called
+```js
+var dataSource = [
+  {id: 1, name: 'Foo', lastName: 'Bar'},
+  {id: 2, name: 'Bar', lastName: 'Foo'}
+  ...
+]
 
 
+var columns = [
+  {name: 'index', render: function(v){return 'Index ' + v}},
+  {name: 'firstName'},
+  {name: 'lastName'}
+]
+
+<DataGrid columns={columns} rowHeight={40} />
+
+or
+
+<DataGrid rowHeight={40}>
+  <Column name="index" render={(v) => 'Index' + v} />
+  <Column name="firstName" render={(v) => 'Index' + v} />
+  <Column name="lastName" render={(v) => 'Index' + v} />
+<DataGrid />
+
+```
+Each column should have a `name` property, and optionally a `title` property.
+The `name` property can be omitted if a render function is specified.
+If no **`title`** property is specified, a humanized version of the column **`name`** will be used.
+
+## Column Group Props
+
+Prop|Type|Default|Description
+--- | --- | --- | ---
+`width`| String\|Number| - | a fixed with that Column grup should be
+`fixed`| Booleon| false | if the ColumnGroup show be a fixed size, given by the acumulative width of it's columns, so it doesn't have a horizontal scrollbar.
+`columns`| JSON | - | Read more on how to configure [columns](#columns).
+`children`| JSX | - | Used to configure it's columns, use `Column` componnet. Read more on how to configure [columns](#columns).
+`isPlaceholderActive` | Bool | false | controll if `rowPlaceholder` shold be rendered
+
+
+**Example:**
+
+```js
+var dataSource = [
+  {id: 1, name: 'Foo', lastName: 'Bar'},
+  {id: 2, name: 'Bar', lastName: 'Foo'}
+  ...
+]
+
+
+var columns = [
+  {name: 'index', render: function(v){return 'Index ' + v}},
+  {name: 'firstName'},
+  {name: 'lastName'}
+]
+var columns2 = [
+  {name: 'index', render: function(v){return 'Index ' + v}},
+  {name: 'firstName'},
+]
+
+<DataGrid columns={columns} rowHeight={40}>
+  <ColumnGroup fixed columns={columns1}
+  <ColumnGroup columns={columns2}
+<DataGrid />
+
+or
+
+<DataGrid rowHeight={40}>
+  <ColumnGroup fixed>
+    <Column name="firstName" render={(v) => 'Index' + v} />
+    <Column name="lastName" render={(v) => 'Index' + v} />
+  </ColumnGroup>
+  <ColumnGroup>
+    <Column name="email" render={(v) => 'Index' + v} />
+    <Column name="id" render={(v) => 'Index' + v} />
+  </ColumnGroup>
+<DataGrid />
+
+```
+
+
+## Notes
+
+DataGrid simulates scroll, it uses `onWheel` and touch events for this.
+If you have an element, that has scroll, inside the grid and don't want the grid to scroll, you have to stop `onWheel` event from propagating (`event.stopPropagation()`).
 
 ## Contributing
-
-Use [Github issues](https://github.com/zippyui/react-datagrid/issues) for feature requests and bug reports.
-
-We actively welcome pull requests.
-
-For setting up & starting the project locally, use:
 
 ```sh
 $ git clone https://github.com/zippyui/react-datagrid
 $ cd react-datagrid
 $ npm install
-$ npm run dev # or npm run hot
+$ npm run dev
+# goto localhost:9191
 ```
-
-Now navigate to [localhost:9090](http://localhost:9090/)
-
-If you want to have `react-hot-loader` enabled, and see code changes pushed instantly, without losing page state, use `npm run hot` instead of `npm run dev`.
-
-Before building a new version, make sure you run
-
-```sh
-$ npm run build
-```
-which compiles the `src` folder (which contains jsx files) into the `lib` folder (only valid EcmaScript 5 files).
 
 ## License
 

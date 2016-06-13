@@ -3,10 +3,11 @@
 ===================================*/
 
 .react-datagrid {
-  font-family: 'Lato', sans-serif;
-
   box-sizing: border-box;
-  *, *:before, *:after {
-    box-sizing: inherit;
+
+  *,
+  *:before,
+  *:after {
+    box-sizing: border-box;;
   }
 }

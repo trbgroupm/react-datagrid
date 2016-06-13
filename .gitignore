@@ -29,9 +29,5 @@ node_modules
 # Users Environment Variables
 .lock-wscript
 
-
 lib
 dist
-index.css
-base.css
-theme

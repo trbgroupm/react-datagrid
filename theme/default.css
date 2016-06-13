@@ -1,0 +1,83 @@
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local("Lato Regular"), local("Lato-Regular"), url(https://fonts.gstatic.com/s/lato/v11/UyBMtLsHKBKXelqf4x7VRQ.woff2) format("woff2");
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF; }
+
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local("Lato Regular"), local("Lato-Regular"), url(https://fonts.gstatic.com/s/lato/v11/1YwB1sO8YE1Lyjf12WNiUA.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000; }
+
+/* latin-ext */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local("Lato Bold"), local("Lato-Bold"), url(https://fonts.gstatic.com/s/lato/v11/ObQr5XYcoH0WBoUxiaYK3_Y6323mHUZFJMgTvxaG2iE.woff2) format("woff2");
+  unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20AB, U+20AD-20CF, U+2C60-2C7F, U+A720-A7FF; }
+
+/* latin */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  src: local("Lato Bold"), local("Lato-Bold"), url(https://fonts.gstatic.com/s/lato/v11/H2DMvhDLycM56KNuAtbJYA.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2212, U+2215, U+E0FF, U+EFFD, U+F000; }
+
+/*===================================
+=            Base styles            =
+===================================*/
+.react-datagrid {
+  font-family: 'Lato', sans-serif;
+  box-sizing: border-box; }
+  .react-datagrid *, .react-datagrid *:before, .react-datagrid *:after {
+    box-sizing: inherit; }
+
+/*----------  Main  ----------*/
+.react-datagrid {
+  border-left: 1px solid #e4e4e4;
+  border-right: 1px solid #e4e4e4;
+  box-shadow: 1px 2px 11px 4px rgba(181, 181, 181, 0.3); }
+
+/*----------  Header  ----------*/
+.react-datagrid__header {
+  border-top: 1px solid #e4e4e4;
+  border-bottom: 1px solid #e4e4e4; }
+
+/*----------  Body  ----------*/
+/*----------  Scroller  ----------*/
+/*----------  Row  ----------*/
+.react-datagrid__row {
+  border-bottom: 1px solid #e4e4e4;
+  font-size: 14px;
+  color: #4C4C4C; }
+
+.react-datagrid__row--hover {
+  background: #bfbfbf; }
+
+/*----------  Cell & Column-header  ----------*/
+.react-datagrid__cell,
+.react-datagrid__column-header {
+  padding: 10px 5px;
+  font-size: 14px; }
+
+/*-----  Column Header  -----*/
+.react-datagrid__column-header {
+  font-weight: 600;
+  color: #7D7D7D; }
+
+/*----------  Cell  ----------*/
+.react-datagrid__cell {
+  border-right: 1px solid #e4e4e4; }
+
+.react-datagrid__cell--last {
+  border-right: 0; }
+
+/*----------  Borders  ----------*/
+/*----------  Load Mask  ----------*/
