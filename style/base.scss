@@ -2,9 +2,6 @@
 =            Base styles            =
 ===================================*/
 
-@import './variables';
-@import '~react-flex/index.css';
-
 /*----------  Main  ----------*/
 .react-datagrid {
   height: 100%;
@@ -26,8 +23,8 @@
 .react-datagrid__body--loading {}
 
 .react-datagrid__body--scrolling {
-  // usefull, when you scroll rows don't trigger onMouseOver 
-  .react-datagrid__row { 
+  // usefull, when you scroll rows don't trigger onMouseOver
+  .react-datagrid__row {
     pointer-events: none;
   }
 }
@@ -102,7 +99,7 @@
   transform: translateY(-50%);
   width: 350px;
 
-  height: 20px; 
+  height: 20px;
   background: #EAECEF;
 }
 
@@ -110,7 +107,7 @@
 .react-datagrid__cell,
 .react-datagrid__column-header {
   overflow: hidden;
-  white-space: nowrap; 
+  white-space: nowrap;
   text-overflow: ellipsis;
 }
 
@@ -160,3 +157,4 @@
   z-index: 10;
 }
 
+@import '~react-flex/index.scss';

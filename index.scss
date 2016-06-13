@@ -1,15 +1,16 @@
 @import './style/index';
+@import './fonts.scss';
 
 @import '~normalize.css/normalize.css';
 
 /* apply a natural box layout model to all elements, but allowing components to change */
 html {
   box-sizing: border-box;
+  font-family: 'Lato', sans-serif;
 }
 *, *:before, *:after {
   box-sizing: inherit;
 }
-
 
 html, body, #content {
   min-height: 100%;

@@ -1,24 +1,10 @@
-var PORT = 9191;
-var webpack = require('webpack')
-var path = require('path')
-
-var definePlugin = new webpack.DefinePlugin({
-  //we expose all vars exported by env.js to the client
-  'process.env': JSON.stringify({
-    NODE_ENV: 'development'
-  })
-});
-
 module.exports = {
   watchPoll: true,
   watchOptions: {
     aggregateTimeout: 300,
     poll: 1000
   },
-  devtool: 'source-map',
   entry: [
-    'webpack-dev-server/client?http://localhost:' + PORT,
-    'webpack/hot/only-dev-server',
     './index.js'
   ],
   output: {
@@ -30,25 +16,11 @@ module.exports = {
   externals: {
     faker: 'faker'
   },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoErrorsPlugin(),
-    definePlugin
-  ],
   devServer: {
     publicPath: '/assets/',
-    port: PORT,
+    port: 9191,
     hot: true,
     host: '0.0.0.0',
     historyApiFallback: true
-  },
-  resolve: {
-    modulesDirectories: [
-      'app_modules',
-      'node_modules'
-    ],
-    alias: {
-      src: path.resolve(__dirname, '../src'),
-    }
   }
 }
