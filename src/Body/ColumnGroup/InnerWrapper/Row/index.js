@@ -3,7 +3,7 @@ import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
 import {Flex} from 'react-flex'
 import assign from 'object-assign'
-import join from '../../../../utils/join'
+import join from '../../../../join'
 import shallowequal from 'shallowequal'
 
 import Cell from '../../Cell'
@@ -75,20 +75,20 @@ export default class Row extends Component {
       height: rowHeight,
       minWidth
     })
-    
+
     if (rowStyle) {
       if (typeof rowStyle === 'function') {
         style = rowStyle(data, props)
       } else {
         style = assign(style, rowStyle)
       }
-    }  
-    
+    }
+
     const rowProps = assign({}, props, {
       className,
       style,
       tabIndex: -1,
-    }, 
+    },
       passedProps,
       // passedProps should not overwrite the folowing methods
       // onEvent prop will be called also
@@ -102,7 +102,7 @@ export default class Row extends Component {
     // to improve performance when rows are heavy in content
     // using prop placeholder={true} will render a placeholder insted of row's content
     if (isPlaceholderActive && !bufferValid) {
-      rowProps.children = realIndex % 2 === 0? this.props.renderRowPlaceholder(140) : this.props.renderRowPlaceholder(120) 
+      rowProps.children = realIndex % 2 === 0? this.props.renderRowPlaceholder(140) : this.props.renderRowPlaceholder(120)
     } else {
       rowProps.children = this.renderRow(data, columns)
     }
@@ -126,9 +126,9 @@ export default class Row extends Component {
       const {
         name
       } = columnProps
-      
+
       // column.name can be ommited if it has a render method
-      const key = `${name}-${index}` 
+      const key = `${name}-${index}`
       const isFirst = index === 0
       const isLast = index === lastIndex
       const value = data[name]
@@ -149,7 +149,7 @@ export default class Row extends Component {
       if (cell === undefined){
         cell = <Cell {...cellProps} />
       }
-      
+
       return cell
     })
   }
@@ -157,45 +157,45 @@ export default class Row extends Component {
   onMouseEnter(event){
     const props = this.props
     const { passedProps } = props
-    
+
     props.onMouseEnter(event, props)
 
     if (passedProps && passedProps.onMouseEnter) {
       passedProps.onMouseEnter(event, props)
-    } 
+    }
   }
 
   onMouseLeave(event){
     const props = this.props
     const { passedProps } = props
-    
+
     props.onMouseLeave(event, props)
 
     if (passedProps && passedProps.onMouseLeave) {
       passedProps.onMouseLeave(event, props)
-    }     
+    }
   }
 
   onClick(event){
     const props = this.props
     const { passedProps } = props
-    
+
     props.onClick(event, props)
 
     if (passedProps && passedProps.onClick) {
       passedProps.onClick(event, props)
-    }     
+    }
   }
-  
+
   onFocus(event){
     const props = this.props
     const { passedProps } = props
-    
+
     props.onFocus(event, props)
 
     if (passedProps && passedProps.onFocus) {
       passedProps.onFocus(event, props)
-    }     
+    }
   }
 }
 
@@ -206,7 +206,7 @@ export default class Row extends Component {
 //     return function(){
 //       const props = this.props
 //       const { passedProps } = props
-      
+
 //       props[fnName](event, props)
 
 //       if (passedProps && passedProps[fnName]) {

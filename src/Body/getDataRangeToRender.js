@@ -8,7 +8,7 @@ const getDataRangeToRender = (bodyHeight, itemHeight, scrollTop, extraRows = 4) 
     noItemsToRender += 1
   }
 
-  if (scrollTop <= (extraRows/2) * itemHeight) {
+  if (scrollTop <= (extraRows / 2) * itemHeight) {
     // reder first n items
     return {
       from: 0,
@@ -17,10 +17,10 @@ const getDataRangeToRender = (bodyHeight, itemHeight, scrollTop, extraRows = 4) 
   }
 
   let renderFrom = parseInt(scrollTop / itemHeight - (extraRows / 2), 10)
-  
+
   // fisrt must be even
   if (renderFrom % 2 !== 0) {
-    renderFrom += 1  
+    renderFrom += 1
   }
 
   const rangeToRender = {

@@ -1,22 +1,21 @@
 import React, { PropTypes } from 'react'
-import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
-import join from '../../utils/join'
-import assign from 'object-assign'
-import { Flex, Item } from 'react-flex'
+import { Flex } from 'react-flex'
 import DragHelper from 'drag-helper'
-import debounce from 'lodash.debounce'
 
-const IS_MAC     = global && global.navigator && global.navigator.appVersion && global.navigator.appVersion.indexOf("Mac") != -1
-const IS_FIREFOX = global && global.navigator && global.navigator.userAgent && !!~global.navigator.userAgent.toLowerCase().indexOf('firefox')
+const IS_MAC = global && global.navigator && global.navigator.appVersion &&
+  global.navigator.appVersion.indexOf('Mac') != -1
+
+const IS_FIREFOX = global && global.navigator && global.navigator.userAgent &&
+  !!~global.navigator.userAgent.toLowerCase().indexOf('firefox')
 
 class Scroller extends Component {
 
-  componentDidMount(){
+  componentDidMount() {
     this.scrollAt(this.props.scrollTop)
   }
 
-  render(){
+  render() {
     const props = this.props
 
     const {
@@ -205,4 +204,3 @@ Scroller.propTypes = {
 }
 
 export default Scroller
-

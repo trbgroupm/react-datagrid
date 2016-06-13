@@ -5,7 +5,7 @@ import { Flex } from 'react-flex'
 import getIndexBy from '../../../utils/getIndexBy'
 
 import assign from 'object-assign'
-import join from '../../../utils/join'
+import join from '../../../join'
 import humanize from '../../../utils/humanize'
 import Cell from '../Cell'
 
