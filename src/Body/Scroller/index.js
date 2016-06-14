@@ -105,13 +105,13 @@ class Scroller extends Component {
     }
   }
 
-  onScrollBarScroll(event){
+  onScrollBarScroll(event) {
     if (event.target.scrollTop !== this.props.scrollTop) {
       this.onScroll(event.target.scrollTop, event)
     }
   }
 
-  onWheel(event){
+  onWheel(event) {
     const props = this.props
     const {
       scrollStep,

@@ -21,10 +21,9 @@ export default class ColumnGroup extends Component {
     const {
       viewportHeight,
       width,
-      chilren,
       fixed,
       innerWrapperOffset,
-      hideHeader,
+      header,
       columns,
       isMultiSort,
       sortable,
@@ -49,7 +48,7 @@ export default class ColumnGroup extends Component {
     }
 
     const className = join(
-        'react-datagrid__colum-group',
+        'react-datagrid__column-group',
         props.className
       )
 
@@ -65,31 +64,43 @@ export default class ColumnGroup extends Component {
       onScroll={this.onScroll}
     >
       {
-        !hideHeader
+        header
         &&
         <Header
           data={data}
           columns={columns}
           minWidth={minWidth}
-          onHeaderCellClick={props.onHeaderCellClick}
+          onCellClick={props.onHeaderCellClick}
+          onSortClick={props.onHeaderSortClick}
           isMultiSort={isMultiSort}
           sortable={sortable}
           sortInfo={sortInfo}
-          onHeaderHeightChange={this.props.onHeaderHeightChange}
+          onResize={this.onResize}
         />
       }
-      <div className="react-datagrid__colum-group__body">
+      <div className="react-datagrid__column-group__body">
         <div
-          className="react-datagrid__colum-group__body__inner-wrapper"
+          className="react-datagrid__column-group__body__inner-wrapper"
           style={innerWrapperStyle}
         >
-          <InnerWrapper {...props} columns={columns} minWidth={minWidth} innerWrapperOffset={null} />
+          <InnerWrapper
+            {...props}
+            columns={columns}
+            minWidth={minWidth}
+            innerWrapperOffset={null}
+          />
         </div>
       </div>
     </div>
   }
 
-  onScroll(ev){
+  onResize({ height }) {
+    if (this.props.onHeaderHeightChange) {
+      this.props.onHeaderHeightChange(height)
+    }
+  }
+
+  onScroll(ev) {
     ev.stopPropagation()
     this.props.onScroll(ev)
   }

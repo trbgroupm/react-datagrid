@@ -2,6 +2,18 @@
 =            Base styles            =
 ===================================*/
 
+
+.react-datagrid {
+  box-sizing: border-box;
+
+  *,
+  *:before,
+  *:after {
+    box-sizing: border-box;;
+  }
+}
+
+
 /*----------  Main  ----------*/
 .react-datagrid {
   height: 100%;
@@ -30,25 +42,23 @@
 }
 
 /*----------  Column/Cell Groups  ----------*/
-.react-datagrid__colum-group {
+.react-datagrid__column-group {
   overflow-y: hidden;
 }
 
-.react-datagrid__header__colum-group {
-  overflow: hidden;
-}
-
-
-.react-datagrid__colum-group__header {
+.react-datagrid__column-group__header {
   position: relative;
   z-index: 1;
   overflow: hidden;
-  background: #fff;
+
+  &--placeholder {
+    position: absolute;
+  }
 }
 
-.react-datagrid__colum-group__body {}
+.react-datagrid__column-group__body {}
 
-.react-datagrid__colum-group__body__inner-wrapper {
+.react-datagrid__column-group__body__inner-wrapper {
   position: relative;
 }
 
@@ -85,7 +95,6 @@
 }
 
 .react-datagrid__row--active {
-  background: #D0E2FF;
 }
 
 .react-datagrid__row--even {}
@@ -129,22 +138,14 @@
   text-align: center;
 }
 
-.react-datagrid__icon-sort-asc {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0 4px 8px 4px;
-  border-color: transparent transparent #8a8a8a transparent;
+.react-datagrid__icon-sort--hidden {
+  visibility: hidden;
 }
-
+.react-datagrid__icon-sort-asc,
 .react-datagrid__icon-sort-desc {
   display: inline-block;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 8px 4px 0 4px;
-  border-color: #8a8a8a transparent transparent transparent;
+  vertical-align: middle;
+  fill: #8a8a8a;
 }
 
 

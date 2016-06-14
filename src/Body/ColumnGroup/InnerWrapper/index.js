@@ -4,7 +4,7 @@ import Row from './Row'
 import shallowequal from 'shallowequal'
 
 export default class ColumnGroupInnerWrapper extends Component {
-  
+
   shouldComponentUpdate(nextProps){
     return !shallowequal(nextProps, this.props)
   }
@@ -29,7 +29,6 @@ export default class ColumnGroupInnerWrapper extends Component {
        isMultiselect,
        hasSelection,
        activeIndex,
-       onRowFocus,
        rowProps: passedProps,
        zebraRows,
        bufferValid,
@@ -38,7 +37,7 @@ export default class ColumnGroupInnerWrapper extends Component {
        renderRowPlaceholder,
        columns,
        minWidth,
-       rowRef
+       rowKey
      } = props
 
     const rows = data.slice(from, to).map((rowData, index, dataSlice) => {
@@ -48,19 +47,19 @@ export default class ColumnGroupInnerWrapper extends Component {
        const even = !!(realIndex % 2)
        const active = activeIndex === realIndex
 
-       const keyIndex = rowRef === 'realIndex'? realIndex : index
+       const keyIndex = rowKey === 'realIndex' ? realIndex : index
        const key = `row-${keyIndex}`
 
-       const isSelected = hasSelection && 
+       const isSelected = hasSelection &&
                          (
-                           isMultiselect? 
+                           isMultiselect?
                              selected.hasOwnProperty(id) : // TODO: use hasOwn, with curry
                              selected == id // to allow type conversion, so 5 == '5'
                          )
 
-        
 
-       const rowProps = {
+
+      const rowProps = {
          id,
          columns,
          minWidth,
@@ -77,42 +76,41 @@ export default class ColumnGroupInnerWrapper extends Component {
          isScrolling,
          isPlaceholderActive,
          renderRowPlaceholder,
-         selected: isSelected, // row uses selected as a bool, a state 
-         data: rowData, 
+         selected: isSelected, // row uses selected as a bool, a state
+         data: rowData,
          onMouseEnter: onRowMouseEnter,
          onMouseLeave: onRowMouseLeave,
          onClick: onRowClick,
-         onFocus: onRowFocus
+
+         even: false,
+         odd: false
        }
 
-       if (zebraRows) {
-         rowProps.even = even
-         rowProps.odd = !even
-       } else {
-         rowProps.even = false
-         rowProps.odd = false
-       }
+      if (zebraRows) {
+       rowProps.even = even
+       rowProps.odd = !even
+      }
 
-       let row
-       if (props.rowFactory){
-         row = props.rowFactory(rowProps)
-       }
+      let row
+      if (props.rowFactory){
+        row = props.rowFactory(rowProps)
+      }
 
-       if (row === undefined){
-         row = <Row {...rowProps} />
-       }
+      if (row === undefined){
+        row = <Row {...rowProps} />
+      }
 
-       return row
-     })
+      return row
+    })
 
-      return <div>{rows}</div>
-   }
+    return <div>{rows}</div>
+  }
 }
 
 ColumnGroupInnerWrapper.defaultProps = {
-  rowRef: 'realIndex'
+  rowKey: 'realIndex'
 }
 
 ColumnGroupInnerWrapper.propTypes = {
-  rowRef: PropTypes.oneOf(['realIndex', 'renderIndex'])
+  rowKey: PropTypes.oneOf(['realIndex', 'renderIndex'])
 }

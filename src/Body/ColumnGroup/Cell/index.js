@@ -1,10 +1,15 @@
 import React, { PropTypes } from 'react'
-import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
+
 import assign from 'object-assign'
 import { Item } from 'react-flex'
-import join from '../../../join'
 import shallowequal from 'shallowequal'
+
+import join from '../../../join'
+import bemFactory from '../../../bemFactory'
+
+const cellBem = bemFactory('react-datagrid__cell')
+const headerBem = bemFactory('react-datagrid__column-header')
 
 export default class Cell extends Component {
 
@@ -16,57 +21,80 @@ export default class Cell extends Component {
     return !shallowequal(nextProps, this.props)
   }
 
-  render(){
-    const props = this.props
-
-    const {
-      name,
-      data,
-      render: renderCell,
-      headerCell,
-      cellDefaultClassName,
-      headerCellDefaultClassName,
-      value,
-    } = props
-
+  prepareStyle(props) {
     const style = assign({}, props.style)
 
-    const baseClassName = headerCell? headerCellDefaultClassName : cellDefaultClassName
+    const { minWidth, maxWidth } = props
+    let { width } = props
+
+    if (width && minWidth && width < minWidth){
+      width = minWidth
+    }
+
+    if (minWidth != null){
+      style.minWidth = minWidth
+    }
+
+    if (maxWidth != null) {
+      style.maxWidth = maxWidth
+    }
+
+    if (width != null) {
+      style.minWidth = style.maxWidth = width
+    }
+
+    return style
+  }
+
+  prepareClassName(props) {
+    const {
+      headerCell: isHeaderCell,
+      headerCellDefaultClassName,
+      cellDefaultClassName
+    } = props
+
+    const baseClassName = isHeaderCell ?
+      headerCellDefaultClassName :
+      cellDefaultClassName
+
     let className = join(
+        props.className,
         baseClassName,
         props.textAlign && `${baseClassName}--align-${props.textAlign}`,
         props.first && `${baseClassName}--first`,
         props.last && `${baseClassName}--last`
       )
 
-    if (headerCell) {
-      className = join(className, props.titleClassName)
-    } else {
-      className = join(className, props.className)
+    if (isHeaderCell) {
+      className = join(
+        className,
+        props.titleClassName,
+        props.sortable && `${baseClassName}--sortable`
+      )
     }
 
-    let minWidth = props.minWidth
-    let width = props.width
-    let maxWidth = props.maxWidth
+    return className
+  }
 
-    if (width && minWidth && width < minWidth){
-      width = minWidth
-    }
+  render() {
+    const props = this.props
 
-    if (minWidth !== undefined){
-      style.minWidth = minWidth
-    }
+    const {
+      data,
+      value,
+      name,
 
-    if (maxWidth !== undefined) {
-      style.maxWidth = maxWidth
-    }
+      headerCell,
 
-    if (width !== undefined) {
-      style.minWidth = style.maxWidth = width
-    }
+      render: renderCell
+    } = props
+
+    const className = this.prepareClassName(props)
+    const style = this.prepareStyle(props)
 
     let cellProps = assign({}, props, {
       value,
+      name,
       className,
       children: value,
       style,
@@ -78,76 +106,120 @@ export default class Cell extends Component {
     if (headerCell) {
       // I want to add onClick event handler so I can
       // use it for sort
-      cellProps = this.getHeaderCellProps(cellProps)
+      cellProps = this.prepareHeaderCellProps(cellProps)
     }
 
-    // TODO: don't call renderCell on header cell
-    let result
+    let renderNode
+
     if (renderCell && !headerCell) {
-      result = renderCell({value, data, cellProps})
+      renderNode = renderCell({ value, data, cellProps })
     }
 
-    if (result === undefined){
-      result = <Item {...cellProps} title={null} data={null} />
+    if (renderNode === undefined) {
+      renderNode = <Item
+        {...cellProps}
+        title={null}
+        data={null}
+      />
     }
 
-    return result
+    return renderNode
   }
 
-  getHeaderCellProps(cellProps){
-    let children = React.Children.toArray(cellProps.children)
-    let sortTools
+  prepareHeaderCellProps(cellProps) {
+    const { props } = this
+    const { children } = cellProps
 
-    if (cellProps.sortInfo) {
-      sortTools = this.getScortTools(cellProps.sortInfo.dir)
-      children = children.concat(sortTools)
+    if (cellProps.sortable) {
+      const sortTools = this.getSortTools(cellProps.sortInfo ? cellProps.sortInfo.dir : null)
+
+      cellProps.children = [
+        children,
+        sortTools
+      ]
+
+      if (cellProps.sortInfo && cellProps.sortInfo.dir) {
+        const dirName = cellProps.sortInfo.dir == 1 ? 'asc' : 'desc'
+
+        cellProps.className = join(
+          cellProps.className,
+          `${props.headerCellDefaultClassName}--sort-${dirName}`
+        )
+      }
     }
 
-    return assign({}, cellProps, {
-      children
-    })
+    return cellProps
   }
 
-  onClick(event){
+  onClick(event) {
     if (this.props.onClick) {
       this.props.onClick(event, this.props)
+    }
+
+    if (this.props.headerCell && this.props.sortable) {
+      this.props.onSortClick(this.props)
     }
   }
 
   // direction can be 1, -1 or null
-  getScortTools(direction = null){
-    if (direction === 0) {
-      return
+  getSortTools(direction = null) {
+    const { props } = this
+
+    if (props.renderSortTool) {
+      return props.renderSortTool(direction)
     }
 
-    return direction === -1?
-      <i className="react-datagrid__icon-sort-desc" /> :
-      <i className="react-datagrid__icon-sort-asc" />
+    let visibilityClassName = ''
+
+    if (!direction) {
+      visibilityClassName = 'react-datagrid__icon-sort--hidden'
+    }
+
+    return direction === -1 ?
+      <svg className={join(visibilityClassName, 'react-datagrid__icon-sort-desc')} height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7.41 7.84L12 12.42l4.59-4.58L18 9.25l-6 6-6-6z" />
+      </svg> :
+      <svg className={join(visibilityClassName, 'react-datagrid__icon-sort-asc')} height="20" viewBox="0 0 24 24" width="20" xmlns="http://www.w3.org/2000/svg">
+        <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z" />
+      </svg>
   }
 }
 
+const emptyFn = () => {}
+
 Cell.defaultProps = {
-  cellDefaultClassName: 'react-datagrid__cell',
-  headerCellDefaultClassName: 'react-datagrid__column-header',
-  minWidth: 40
+  cellDefaultClassName: cellBem(),
+  headerCellDefaultClassName: headerBem(),
+  minWidth: 40,
+
+  onSortClick: emptyFn
 }
 
 Cell.propTypes = {
-  style: PropTypes.object,
   render: PropTypes.func,
+  renderSortTool: PropTypes.func,
+
+  style: PropTypes.object,
+  className: PropTypes.string,
+
   data: PropTypes.object,
   name: PropTypes.string,
-  width: PropTypes.oneOfType([
-      PropTypes.number,
-      PropTypes.string
-    ]),
-  flex: (props, propName) => {
-    const flex = props[propName]
+  value: PropTypes.node,
 
-    if (flex < 1 || flex > 24) {
-      return new Error(`Column flex prop expected to be between 1 and 24, got ${flex}`)
-    }
-  },
-  cellDefaultClassName: PropTypes.string,
-  onClick: PropTypes.func,
+  width: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string
+  ]),
+  maxWidth: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string
+  ]),
+  minWidth: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.string
+  ]),
+
+  flex: PropTypes.number,
+
+  onClick: PropTypes.func
 }

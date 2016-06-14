@@ -26,8 +26,9 @@ export default class Row extends Component {
     return !shallowequal(nextProps, this.props)
   }
 
-  render(){
+  render() {
     const props = this.props
+
     const {
       rowHeight,
       data,
@@ -55,7 +56,7 @@ export default class Row extends Component {
 
     let className = join(
         'react-datagrid__row',
-        even &&  'react-datagrid__row--even',
+        even && 'react-datagrid__row--even',
         odd && 'react-datagrid__row--odd',
         over && 'react-datagrid__row--over',
         selected && 'react-datagrid__row--selected',
@@ -86,8 +87,7 @@ export default class Row extends Component {
 
     const rowProps = assign({}, props, {
       className,
-      style,
-      tabIndex: -1,
+      style
     },
       passedProps,
       // passedProps should not overwrite the folowing methods
@@ -128,7 +128,8 @@ export default class Row extends Component {
       } = columnProps
 
       // column.name can be ommited if it has a render method
-      const key = `${name}-${index}`
+      // so we also
+      const key = `${name || ''}-${index}`
       const isFirst = index === 0
       const isLast = index === lastIndex
       const value = data[name]
@@ -184,17 +185,6 @@ export default class Row extends Component {
 
     if (passedProps && passedProps.onClick) {
       passedProps.onClick(event, props)
-    }
-  }
-
-  onFocus(event){
-    const props = this.props
-    const { passedProps } = props
-
-    props.onFocus(event, props)
-
-    if (passedProps && passedProps.onFocus) {
-      passedProps.onFocus(event, props)
     }
   }
 }

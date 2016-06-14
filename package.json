@@ -1,6 +1,6 @@
 {
   "name": "react-datagrid",
-  "version": "3.0.4-beta",
+  "version": "3.0.7-beta",
   "description": "React DataGrid",
   "main": "lib/index.js",
   "scripts": {
@@ -32,7 +32,7 @@
     "react",
     "grid"
   ],
-  "author": "Radu Brehar",
+  "author": "ZippyUI <contact@zippyui.com>",
   "bugs": {
     "url": "https://github.com/zippyui/react-datagrid/issues"
   },
@@ -40,8 +40,9 @@
   "license": "MIT",
   "devDependencies": {
     "autoprefixer-loader": "3.2.0",
+    "babel-cli": "^6.10.1",
     "babel-core": "6.3.21",
-    "babel-loader": "6.2.0",
+    "babel-loader": "^6.2.4",
     "babel-preset-es2015": "6.3.13",
     "babel-preset-react": "6.3.13",
     "css-loader": "0.23.1",
@@ -75,7 +76,7 @@
     "react-class": "^2.1.0",
     "react-flex": "^2.2.2",
     "react-load-mask": "1.0.1",
-    "react-notify-resize": "0.1.8",
+    "react-notify-resize": "^1.0.3",
     "shallowequal": "0.2.2",
     "sorty": "^1.2.1"
   }

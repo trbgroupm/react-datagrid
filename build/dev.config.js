@@ -19,7 +19,6 @@ module.exports = {
   devServer: {
     publicPath: '/assets/',
     port: 9191,
-    hot: true,
     host: '0.0.0.0',
     historyApiFallback: true
   }

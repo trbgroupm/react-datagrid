@@ -1,1 +1,13 @@
-$border: 1px solid rgb(228, 228, 228);
+$GRID_BORDER_COLOR: #c2c2c2 !default;
+$GRID_BORDER: 1px solid $GRID_BORDER_COLOR !default;
+
+$HEADER_COLOR: #656464 !default;
+$HEADER_BG: #f5f5f5 !default;
+$HEADER_BORDER_COLOR: #c2c2c2 !default;
+
+$ROW_ODD_BG_COLOR: #fafafa !default;
+$ROW_ACTIVE_BG_COLOR: lighten(rgb(52, 154, 239), 30%) !default;
+$ROW_ACTIVE_COLOR: inherit !default;
+
+$CELL_BORDER_COLOR: $HEADER_BORDER_COLOR !default;
+$border: 1px solid rgb(228, 228, 228) !default;

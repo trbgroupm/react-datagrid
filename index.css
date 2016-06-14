@@ -1,6 +1,13 @@
 /*===================================
 =            Base styles            =
 ===================================*/
+.react-datagrid {
+  box-sizing: border-box; }
+  .react-datagrid *,
+  .react-datagrid *:before,
+  .react-datagrid *:after {
+    box-sizing: border-box; }
+
 /*----------  Main  ----------*/
 .react-datagrid {
   height: 100%;
@@ -25,19 +32,17 @@
   pointer-events: none; }
 
 /*----------  Column/Cell Groups  ----------*/
-.react-datagrid__colum-group {
+.react-datagrid__column-group {
   overflow-y: hidden; }
 
-.react-datagrid__header__colum-group {
-  overflow: hidden; }
-
-.react-datagrid__colum-group__header {
+.react-datagrid__column-group__header {
   position: relative;
   z-index: 1;
-  overflow: hidden;
-  background: #fff; }
+  overflow: hidden; }
+  .react-datagrid__column-group__header--placeholder {
+    position: absolute; }
 
-.react-datagrid__colum-group__body__inner-wrapper {
+.react-datagrid__column-group__body__inner-wrapper {
   position: relative; }
 
 /*----------  Scroller  ----------*/
@@ -67,9 +72,6 @@
 .react-datagrid__row--selected {
   background: #EAEAEA; }
 
-.react-datagrid__row--active {
-  background: #D0E2FF; }
-
 .react-datagrid__row__placeholder {
   position: absolute;
   left: 10px;
@@ -97,21 +99,14 @@
 .react-datagrid__cell--align-center {
   text-align: center; }
 
-.react-datagrid__icon-sort-asc {
-  display: inline-block;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0 4px 8px 4px;
-  border-color: transparent transparent #8a8a8a transparent; }
+.react-datagrid__icon-sort--hidden {
+  visibility: hidden; }
 
+.react-datagrid__icon-sort-asc,
 .react-datagrid__icon-sort-desc {
   display: inline-block;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 8px 4px 0 4px;
-  border-color: #8a8a8a transparent transparent transparent; }
+  vertical-align: middle;
+  fill: #8a8a8a; }
 
 /*----------  Borders  ----------*/
 /*----------  Load Mask  ----------*/
@@ -2074,21 +2069,11 @@
       -ms-flex-negative: 100;
           flex-shrink: 100; }
 
-/*===================================
-=            Base styles            =
-===================================*/
 .react-datagrid {
-  box-sizing: border-box; }
-  .react-datagrid *,
-  .react-datagrid *:before,
-  .react-datagrid *:after {
-    box-sizing: border-box; }
-
-/*----------  Main  ----------*/
-.react-datagrid {
-  border-left: 1px solid #e4e4e4;
-  border-right: 1px solid #e4e4e4;
+  border: 1px solid #c2c2c2;
   box-shadow: 1px 2px 11px 4px rgba(181, 181, 181, 0.3); }
+  .react-datagrid:focus {
+    outline: none; }
 
 /*----------  Header  ----------*/
 .react-datagrid__header {
@@ -2098,13 +2083,21 @@
 /*----------  Body  ----------*/
 /*----------  Scroller  ----------*/
 /*----------  Row  ----------*/
-.react-datagrid__row {
-  border-bottom: 1px solid #e4e4e4;
-  font-size: 14px;
-  color: #4C4C4C; }
-
 .react-datagrid__row--hover {
   background: #bfbfbf; }
+
+.react-datagrid__row--odd {
+  background: #fafafa; }
+
+.react-datagrid__row--active {
+  background: #c2e1fa;
+  color: inherit; }
+
+.react-datagrid__column-group__header {
+  color: #656464;
+  background: #f5f5f5;
+  border-bottom: 1px solid #c2c2c2;
+  font-weight: 600; }
 
 /*----------  Cell & Column-header  ----------*/
 .react-datagrid__cell,
@@ -2114,15 +2107,24 @@
 
 /*-----  Column Header  -----*/
 .react-datagrid__column-header {
-  font-weight: 600;
-  color: #7D7D7D; }
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
+  border-right: 1px solid #c2c2c2; }
+  .react-datagrid__column-header--sortable {
+    cursor: pointer; }
 
 /*----------  Cell  ----------*/
-.react-datagrid__cell {
-  border-right: 1px solid #e4e4e4; }
-
-.react-datagrid__cell--last {
-  border-right: 0; }
-
 /*----------  Borders  ----------*/
+.react-datagrid--cell-borders-both .react-datagrid__cell {
+  border-right: 1px solid #c2c2c2;
+  border-bottom: 1px solid #c2c2c2; }
+
+.react-datagrid--cell-borders-horizontal .react-datagrid__cell {
+  border-bottom: 1px solid #c2c2c2; }
+
+.react-datagrid--cell-borders-vertical .react-datagrid__cell {
+  border-right: 1px solid #c2c2c2; }
+
 /*----------  Load Mask  ----------*/

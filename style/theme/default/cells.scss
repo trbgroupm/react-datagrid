@@ -1,0 +1,27 @@
+@import './variables';
+
+$base: 'react-datagrid__cell';
+
+/*----------  Cell  ----------*/
+.#{$base} {
+  &--first {}
+  &--last {}
+}
+
+/*----------  Borders  ----------*/
+.react-datagrid--cell-borders-both {
+  .#{$base} {
+    border-right: 1px solid $CELL_BORDER_COLOR;
+    border-bottom: 1px solid $CELL_BORDER_COLOR;
+  }
+}
+.react-datagrid--cell-borders-horizontal {
+  .#{$base} {
+    border-bottom: 1px solid $CELL_BORDER_COLOR;
+  }
+}
+.react-datagrid--cell-borders-vertical {
+  .#{$base} {
+    border-right: 1px solid $CELL_BORDER_COLOR;
+  }
+}

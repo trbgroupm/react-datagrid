@@ -1,0 +1,10 @@
+@import './variables';
+
+.react-datagrid {
+  border: $GRID_BORDER;
+  box-shadow: 1px 2px 11px 4px rgba(181, 181, 181, 0.3);
+
+  &:focus {
+    outline: none;
+  }
+}

@@ -1,17 +1,9 @@
+@import './variables';
 
-/*----------  Main  ----------*/
-.react-datagrid {
-  border-left: $border;
-  border-right: $border;
-  box-shadow: 1px 2px 11px 4px rgba(181, 181, 181, 0.3);
-}
-
-/*----------  Header  ----------*/
-.react-datagrid__header {
-  border-top: $border;
-  border-bottom: $border;
-  // padding-right: 20px;
-}
+@import './grid';
+@import './row';
+@import './header';
+@import './cells';
 
 /*----------  Body  ----------*/
 .react-datagrid__body {
@@ -28,46 +20,6 @@
 
 .react-datagrid__empty-text {}
 
-/*----------  Row  ----------*/
-.react-datagrid__row {
-  border-bottom: $border;
-  font-size: 14px;
-  color: #4C4C4C;
-}
-
-.react-datagrid__row--even {}
-.react-datagrid__row--odd {}
-.react-datagrid__row--hover {
-  background: #bfbfbf;
-}
-
-/*----------  Cell & Column-header  ----------*/
-.react-datagrid__cell,
-.react-datagrid__column-header {
-  padding: 10px 5px;
-  font-size: 14px;
-}
-
-/*-----  Column Header  -----*/
-.react-datagrid__column-header {
-  font-weight: 600;
-  color: #7D7D7D;
-
-}
-
-/*----------  Cell  ----------*/
-.react-datagrid__cell {
-  border-right: $border;
-}
-.react-datagrid__cell--first {}
-.react-datagrid__cell--last {
-  border-right: 0;
-}
-
-
-/*----------  Borders  ----------*/
-.react-datagrid__borders--horizontal {}
-.react-datagrid__borders--vertical {}
 
 /*----------  Load Mask  ----------*/
 .react-datagrid__load-mask {

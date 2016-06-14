@@ -1,0 +1,28 @@
+@import './variables';
+
+// styles applied to the header of the column group,
+// which contains all column headers in the group
+.react-datagrid__column-group__header {
+  color: $HEADER_COLOR;
+  background: $HEADER_BG;
+  border-bottom: 1px solid $HEADER_BORDER_COLOR;
+  font-weight: 600;
+}
+
+// cell styles
+.react-datagrid__cell {
+  padding: 10px 5px;
+}
+
+// styles for the header of a single column
+.react-datagrid__column-header {
+  padding: 10px 5px;
+
+  border-right: 1px solid $HEADER_BORDER_COLOR;
+  line-height: 1.6;
+
+  &--sortable {
+    user-select: none;
+    cursor: pointer;
+  }
+}

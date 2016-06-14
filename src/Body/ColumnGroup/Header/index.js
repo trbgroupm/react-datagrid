@@ -1,67 +1,75 @@
 import React, { PropTypes } from 'react'
-import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
-import { Flex } from 'react-flex'
-import getIndexBy from '../../../utils/getIndexBy'
 
 import assign from 'object-assign'
-import join from '../../../join'
-import humanize from '../../../utils/humanize'
+import { Flex } from 'react-flex'
+import { NotifyResize } from 'react-notify-resize'
+
 import Cell from '../Cell'
 
+import getIndexBy from '../../../utils/getIndexBy'
+import join from '../../../join'
+import humanize from '../../../utils/humanize'
+
 export default class Header extends Component {
-  componentDidMount(){
-    const headerNode = findDOMNode(this.refs.header)
-    if (headerNode) {
-      this.props.onHeaderHeightChange(headerNode.offsetHeight)
-    }
+
+  prepareClassName(props) {
+    return join(
+      'react-datagrid__column-group__header',
+      props.className
+    )
   }
 
-  render(){
-    const props = this.props
-    const {
-      width,
-      columns,
-      minWidth,
-      data
-    } = props
+  prepareStyle(props) {
+    const { width, minWidth } = props
+    let { style } = props
 
-    const className = join('react-datagrid__colum-group__header', props.className)
-    const style = assign({}, props.style)
+    if (width || minWidth) {
+      style = assign({}, props.style)
 
-    if (width) {
-      style.width = Math.max(width, minWidth)
+      if (width) {
+        style.width = Math.max(width, minWidth || 0)
+      }
+
+      if (minWidth) {
+        style.minWidth = minWidth
+      }
     }
 
-    if (minWidth){
-      style.minWidth = minWidth
-    }
+    return style
+  }
+
+  render() {
+    const { props } = this
+    const { columns } = props
+
+    const className = this.prepareClassName(props)
+    const style = this.prepareStyle(props)
 
     return <Flex
-        {...props}
-        ref="header"
-        wrap={false}
-        className={className}
-        data={null}
-        style={style}
-      >
+      wrap={false}
+      {...props}
+      className={className}
+      data={null}
+      style={style}
+    >
       {this.renderColumns(columns)}
+      <NotifyResize notifyOnMount onResize={this.props.onResize} />
     </Flex>
   }
 
-  renderColumns(columns){
+  renderColumns(columns) {
     const props = this.props
     const {
       sortable,
       sortInfo,
-      isMultiSort,
+      isMultiSort
     } = props
 
     return columns.map((column) => {
       const {
         name,
         title,
-        sort,
         index,
       } = column
 
@@ -70,42 +78,47 @@ export default class Header extends Component {
       if (sortable && sortInfo) {
         if (isMultiSort) {
           const sortInfoIndex = getIndexBy(sortInfo, 'name', name)
-          cellSortInfo = sortInfoIndex !== -1? sortInfo[sortInfoIndex] : null
+          cellSortInfo = sortInfoIndex !== -1 ? sortInfo[sortInfoIndex] : null
         } else {
-          cellSortInfo = sortInfo.index === index? sortInfo : null
+          cellSortInfo = sortInfo.index === index ? sortInfo : null
         }
       }
 
       let value
       if (title) {
-        value = typeof title === 'function'?
+        value = typeof title === 'function' ?
             title(assign({}, props, {
               column,
               columnSortInfo: cellSortInfo
             }))
             :
             title
-      } else if (name){
+      } else if (name) {
         value = humanize(name)
       }
 
       return <Cell
         {...column}
-        key={index}
         headerCell
+        key={index}
         value={value}
-        onClick={this.props.onHeaderCellClick}
+        onClick={this.props.onCellClick}
+        onSortClick={this.props.onSortClick}
+        sortable={sortable}
         sortInfo={cellSortInfo}
       />
     })
   }
 }
 
+const emptyFn = () => {}
+
 Header.defaultProps = {
-  onHeaderHeightChange: () => {},
+  onResize: emptyFn
 }
 
 Header.propTypes = {
-  onHeaderCellClick: PropTypes.func,
-  onHeaderHeightChange: PropTypes.func,
+  onCellClick: PropTypes.func,
+  onSortClick: PropTypes.func,
+  onResize: PropTypes.func
 }

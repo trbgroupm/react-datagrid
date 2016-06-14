@@ -37,7 +37,7 @@ $ npm install react-datagrid --save
 `onDataSourceResponse(data)`| Function | - | it is called if `dataSource` is a promise`dataSource.then(onDataSourceResponse, onDataSourceResponse)`
 `columns`| Array | - | an array of columns that are going to be rendered in the grid. Read more on how to configure [columns](#columns).
 `emptyText`| String\|JSX | - | text that appears when dataSource provides an empty dataset
-`hideHeader` | Boolean | false | Set header visibility.
+`header` | Boolean | true | Set header visibility. Specify `header={false}` to hide grid headers
 
 ## Selection
 You can select stuff.
@@ -109,19 +109,22 @@ let sortInfo =  [
 
 
 ## Row
-Rows
+
 
 #### Props
-|Prop|Type|Default|Description
+
+The following props area applied to the `<DataGrid />` component and affect the way grid rows are rendered:
+
+Prop|Type|Default|Description
 --- | --- | --- | ---
-`rowStyle` | Object/Function | - | You can specify either a style object to be applied to all rows, or a function.    The function is called with (data, props) (so you have access to props.index for example) and is expected to return a style object.
+`rowStyle` | Object/Function | | You can specify either a style object to be applied to all rows, or a function. The function is called with (data, props) (so you have access to props.realIndex for example) and is expected to return a style object.
 `rowPlaceholder` | Bool | false | if true while scrolling and buffered items are consumed (we scroll at the end the extra rows rendered) a placeholder is rendered it's columns. It can be set on datagrid or directly on ColumnGroup.
 `renderRowPlaceholder` | Function | - | custom render function for placeholder, to take efect `rowPlaceholder` must be `true`
 `rowPlaceholderDelay` | Number | 300 | time in ms, that has to pass from you start scrolling to activate rowPlaceholder
-`rowRef` | String | realIndex | controls what index to be used as a ref for row, `realIndex` uses index of the piece of data that is used for the row from array of data, `renderIndex` uses the nth position of rendered rows (we render only the visible rows + extraRows). The difference is in the way react treats rows, in `renderIndex` the rows will not change, their contents will change on each render. In `realIndex` when rows are moved out of view, some will get unmounted and some mounted, and the rows will move from top to bottom or from bottom to top. If you use ColumnGropups you can overwrite the global seting directly on the ColumnGroup.
+`rowKey` | String | realIndex | controls what index to be used as a key for the row. `realIndex` uses the index of the row in the dataSource array, `renderIndex` uses the nth position of rendered rows (we render only the visible rows + extraRows). The difference is in the way react treats rows, in `renderIndex` the rows will not change, their contents will change on each render. In `realIndex` when rows are moved out of view, some will get unmounted and some mounted, and the rows will move from top to bottom or from bottom to top. If you use ColumnGroups you can overwrite the global setting directly on the ColumnGroup.
 `onRowMouseLeave(event, rowProps)` | Function | - | row event handler onMouseEnter, event parameter is react event
 `onRowMouseEnter(event, rowProps)` | Function | - | row event handler onMouseEnter, event parameter is react event
-`zebraRows` | Bool | true | controll `react-datagrid__row---odd` and `eact-datagrid__row---even` classNames on rows.
+`zebraRows` | Bool | true | Make grid rows have odd/even css classes & theming, for showing alternate colors. Adds `react-datagrid__row---odd` for odd rows and `eact-datagrid__row---even` for even rows.
 `rowProps` | Object | - | Object of props to be merged to row component
 `renderRow(rowProps)| Function | - | you can use this function to customize render logic of rows, see more [here](#render-row)
 

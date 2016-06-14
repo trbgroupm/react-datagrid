@@ -1,0 +1,19 @@
+@import './variables';
+
+/*----------  Row  ----------*/
+.react-datagrid__row {
+  &--hover {
+    background: #bfbfbf;
+  }
+
+  &--even {
+  }
+  &--odd {
+    background: $ROW_ODD_BG_COLOR;
+  }
+
+  &--active {
+    background: $ROW_ACTIVE_BG_COLOR;
+    color: $ROW_ACTIVE_COLOR;
+  }
+}

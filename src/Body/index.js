@@ -39,7 +39,7 @@ import ColumnGroup from './ColumnGroup'
  */
 class Body extends Component {
 
-  constructor(props){
+  constructor(props) {
     super(props)
 
     const columns = this.getNewColumns(props)
@@ -57,14 +57,15 @@ class Body extends Component {
     }
   }
 
-  componentDidMount(){
+  componentDidMount() {
     this.setBodyHeight()
+
     setTimeout(() => {
       this.setMaxScrollTop()
     }, 0)
   }
 
-  componentWillReceiveProps(nextProps, nextState){
+  componentWillReceiveProps(nextProps, nextState) {
     if (nextProps.data === null) {
       this.setState({
         scrollTop: 0
@@ -96,13 +97,9 @@ class Body extends Component {
         flatColumns
       })
     }
-
-
-
   }
 
-
-  componentWillUpdate(nextProps, nextState){
+  componentWillUpdate(nextProps, nextState) {
     if (!this.refs.scroller) {
       return
     }
@@ -118,8 +115,9 @@ class Body extends Component {
   }
 
   // todo func getBodyHeight
-  render(){
+  render() {
     const preparedProps = this.p = this.prepareProps(this.props)
+
     const {
       data,
       columns,
@@ -142,9 +140,10 @@ class Body extends Component {
       data={null}
       ref="body"
     >
+      <div className="react-datagrid__column-group__header react-datagrid__column-group__header--placeholder" style={{height: this.state.headerHeight, width: '100%'}}/>
       {resizeTool}
       {
-        isEmpty?
+        isEmpty ?
           <EmptyText emptyText={this.props.emptyText} />
           :
           this.renderScroller()
@@ -152,7 +151,7 @@ class Body extends Component {
     </Item>
   }
 
-  renderScroller(){
+  renderScroller() {
     if (!this.props.data) {
       return
     }
@@ -181,6 +180,7 @@ class Body extends Component {
       rowHeight,
       contentHeight,
       renderRow,
+      rowStyle,
       rowProps,
       selected,
       isMultiselect,
@@ -191,15 +191,15 @@ class Body extends Component {
       extraRows,
       onColumnGroupScroll,
       activeIndex,
-      onRowFocus,
       scrollTop,
       children,
       buffer,
       zebraRows,
       renderRowPlaceholder,
-      rowRef,
-      hideHeader,
+      rowKey,
+      header,
       onHeaderCellClick,
+      onHeaderSortClick,
       isMultiSort,
       sortable,
       sortInfo,
@@ -221,7 +221,7 @@ class Body extends Component {
       bufferValid = false
     }
 
-    const {from, to} = this.fromTo
+    const { from, to } = this.fromTo
     const offsetTop = from * rowHeight
     const innerWrapperOffset = offsetTop - scrollTop
 
@@ -235,18 +235,19 @@ class Body extends Component {
       from,
       to,
       renderRow,
+      rowStyle,
       rowFactory,
       cellFactory,
       selected,
       activeIndex,
-      onRowFocus,
       innerWrapperOffset,
       zebraRows,
       bufferValid,
       renderRowPlaceholder,
-      rowRef,
-      hideHeader,
+      rowKey,
+      header,
       onHeaderCellClick,
+      onHeaderSortClick,
       sortable,
       sortInfo,
       isMultiSort,
@@ -257,7 +258,7 @@ class Body extends Component {
       globalProps: this.props,
       onRowMouseEnter: this.onRowMouseEnter,
       onRowMouseLeave: this.onRowMouseLeave,
-      onRowClick: onRowClick,
+      onRowClick,
       overRowId: this.state.overRowId,
       onScroll: onColumnGroupScroll,
     }
@@ -282,14 +283,15 @@ class Body extends Component {
               {},
               columnGroupProps,
               child.props, // let columngroup props overwrite those passed
-              {columns: columns[index]}
+              { columns: columns[index] }
             )
           )
       })
     }
   }
 
-  onHeaderHeightChange(height){
+  onHeaderHeightChange(height) {
+
     this.setBodyHeight(height)
     this.setState({
       headerHeight: height
@@ -299,7 +301,7 @@ class Body extends Component {
     }, 0)
   }
 
-  onRowMouseEnter(event, rowProps){
+  onRowMouseEnter(event, rowProps) {
     this.setState({
       overRowId: rowProps.id
     })
@@ -307,7 +309,7 @@ class Body extends Component {
     this.p.onRowMouseEnter(event, rowProps)
   }
 
-  onRowMouseLeave(event, rowProps){
+  onRowMouseLeave(event, rowProps) {
     // remove id if still present
     if (this.state.overRowId === rowProps.id) {
       this.setState({
@@ -318,7 +320,7 @@ class Body extends Component {
     this.p.onRowMouseLeave(event, rowProps)
   }
 
-  onScroll(scrollTop, event){
+  onScroll(scrollTop, event) {
     this.scrollAt(scrollTop)
 
     if (this.p.onScroll) {
@@ -348,15 +350,16 @@ class Body extends Component {
     }
   }
 
-  onResize(){
+  onResize() {
     this.setBodyHeight()
     setTimeout(() => {
       this.setMaxScrollTop()
     }, 0)
   }
 
-  setBodyHeight(offset){
+  setBodyHeight(offset) {
     offset = offset || this.state.headerHeight || 0
+
     const bodyNode = findDOMNode(this.refs.body)
     let bodyHeight
     if (bodyNode) {
@@ -366,7 +369,7 @@ class Body extends Component {
     }
 
     this.setState({
-      bodyHeight: bodyHeight,
+      bodyHeight
     })
   }
 
@@ -385,7 +388,7 @@ class Body extends Component {
    * Sets isScrolling to false if there is no onScroll
    * registered for 150ms
    */
-  toggleIsScrolling(){
+  toggleIsScrolling() {
     if (this.disableIsScrollingTimeoutId) {
       clearTimeout(this.disableIsScrollingTimeoutId)
     }
@@ -427,7 +430,7 @@ class Body extends Component {
     return index
   }
 
-  scrollAt(scrollTop){
+  scrollAt(scrollTop) {
     raf(() => {
       this.setState({
         scrollTop
@@ -443,7 +446,7 @@ class Body extends Component {
   }
 
 
-  scrollToId(id, config){
+  scrollToId(id, config) {
     // find index of id
     const index = getIndexBy(this.props.data, this.props.idProperty, id)
 
@@ -455,7 +458,7 @@ class Body extends Component {
   // - there are ColumnGrups with jsx
   // - Columgroups have a prop columns
   // - Columgroups have children
-  getNewColumns(props){
+  getNewColumns(props) {
     props = props || this.props
     const columnGroups = props.children
     let columns
@@ -463,22 +466,23 @@ class Body extends Component {
     // we have children (ColumnGroups)
     if (columnGroups) {
       let startIndex = 0
-      columns = columnGroups.map((columnGroup, index) => {
+      columns = React.Children.toArray(columnGroups).map((columnGroup) => {
         const normalizedColumns = this.normalizeColumns(columnGroup.props, startIndex)
         startIndex += normalizedColumns.length
         return normalizedColumns
       })
     } else {
-      columns = this.normalizeColumns({columns: props.columns})
+      columns = this.normalizeColumns({ columns: props.columns })
     }
 
     return columns
   }
 
-  normalizeColumns({children, columns}, startIndex = 0){
+  normalizeColumns({ children, columns }, startIndex = 0) {
     // We want to allow users to use columns configuration as jsx
     // or as an array of config objects
     let normalizedColumns
+
     if (children) {
       // if we have children, we want to take only valid children
       normalizedColumns = React.Children
@@ -490,7 +494,7 @@ class Body extends Component {
     }
 
     return normalizedColumns
-      .map((c, index) => assign({}, c.props, {index: index + startIndex}))
+      .map((c, index) => assign({}, c.props, { index: index + startIndex }))
   }
 
   prepareProps(props){
@@ -519,19 +523,19 @@ class Body extends Component {
   }
 
   // exposed methods
-  getScrollTop(){
+  getScrollTop() {
     return this.state.scrollTop
   }
 
-  getBodyHeight(){
+  getBodyHeight() {
     return this.state.bodyHeight
   }
 
-  getAllColumns(){
+  getAllColumns() {
     return this.state.columns
   }
 
-  getFlattenColumns(){
+  getFlattenColumns() {
     return this.state.flatColumns
   }
 }

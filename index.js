@@ -10,22 +10,29 @@ import gen, { gen2 } from './generate'
 import Perf from 'react-addons-perf'
 
 
-const data = gen2(100000)
+const data = gen2(10000)
 const columns = [
   {
     name: 'name',
     titleClassName: 'helloHEader',
     className: 'test'
   }, {
-    name: 'age'
+    name: 'age',
+    type: 'number'
   }, {
+    name: 'id',
+    type: 'number'
+  },{
     name: 'gender'
   }, {
-    name: 'location'
+    name: 'location',
+    minWidth: 350,
   }, {
     name: 'status',
+    minWidth: 350,
   } , {
     title: 'Actions',
+    minWidth: 350,
     render({value, data, cellProps}) {
       if (cellProps.headerCell){
         value = 'test'
@@ -38,7 +45,10 @@ const columns = [
       </div>
     }
   }
-]
+].map(c => {
+  c.minWidth = c.minWidth || 100
+  return c
+})
 
 
 class App extends Component {
@@ -46,16 +56,17 @@ class App extends Component {
     super(props)
 
     this.state = {
+      sortable: true,
       height: 500,
       sortInfo: {dir: 1, name: "firstName", index: 2},
       data: data
     }
 
-    setTimeout(() => {
-      this.setState({
-        data: gen2(100)
-      })
-    }, 5000)
+    // setTimeout(() => {
+    //   this.setState({
+    //     data: gen2(100)
+    //   })
+    // }, 5000)
   }
 
   render(){
@@ -64,9 +75,8 @@ class App extends Component {
       alignItems="stretch"
       className="app"
       wrap={false}
-      style={{
-        height: this.state.height
-      }}
+      flex
+      style={{padding: 20}}
     >
       <h1>
         React DataGrid by ZippyUi
@@ -93,23 +103,32 @@ class App extends Component {
         >
           Remove Height
         </button>
+
+        <button onClick={() => this.setState({sortable: !this.state.sortable})}>toggle sortable</button>
+        <button onClick={() => this.setState({showCellBorders: !this.state.showCellBorders})}>toggle showCellBorders</button>
+
+        Sortable: {this.state.sortable+''}
       </div>
 
       <DataGrid
-        // defaultActiveIndex={3}
-        hideHeader
+        sortable={this.state.sortable}
+        autoFocus
+        keyPageStep={1000}
         idProperty={'id'}
         dataSource={this.state.data}
+        showCellBorders={this.state.showCellBorders}
         columns={columns}
-        sortable
-        onSortInfoChange={(sortInfo) => this.setState({sortInfo})}
-        sortInfo={this.state.sortInfo}
+        defaultSortInfo={[]}
+        defaultActiveIndex={0}
         renderRow={(rowProps) => {
-          if (rowProps.data.error) {
+          // if (rowProps.data.error) {
             rowProps.className = rowProps.className + ' classErroare'
-          }
+          // }
         }}
-      />
+      >{/*
+        <ColumnGroup fixed columns={columns.slice(0, 3)} />
+        <ColumnGroup columns={columns.slice(3)} />
+      */}</DataGrid>
     </Flex>
   }
 }
