@@ -16,7 +16,7 @@ export default class ColumnGroup extends Component {
     return !shallowequal(nextProps, this.props)
   }
 
-  render(){
+  render() {
     const props = this.props
     const {
       viewportHeight,

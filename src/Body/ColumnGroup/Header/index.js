@@ -75,23 +75,24 @@ export default class Header extends Component {
       } = column
 
       const isSortable = sortable && sortableColumn !== false
-      let cellSortInfo = null
 
-      if (isSortable && sortInfo) {
+      let columnSortInfo
+
+      if (isSortable) {
         if (isMultiSort) {
-          const sortInfoIndex = getIndexBy(sortInfo, 'name', name)
-          cellSortInfo = sortInfoIndex !== -1 ? sortInfo[sortInfoIndex] : null
+          columnSortInfo = sortInfo.filter(info => info.index === index)[0]
         } else {
-          cellSortInfo = sortInfo.index === index ? sortInfo : null
+          columnSortInfo = sortInfo && sortInfo.index === index ?
+            sortInfo :
+            null
         }
       }
-
       let value
       if (title) {
         value = typeof title === 'function' ?
             title(assign({}, props, {
               column,
-              columnSortInfo: cellSortInfo
+              columnSortInfo
             }))
             :
             title
@@ -107,7 +108,7 @@ export default class Header extends Component {
         onClick={this.props.onCellClick}
         onSortClick={this.props.onSortClick}
         sortable={isSortable}
-        sortInfo={cellSortInfo}
+        sortInfo={columnSortInfo}
       />
     })
   }

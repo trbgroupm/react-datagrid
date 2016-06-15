@@ -18,6 +18,7 @@ import 'react-load-mask/index.css'
 const SCREEN_HEIGHT = global.screen && global.screen.height
 
 const isSortControlled = (props) => props.sortInfo !== undefined
+const notEmpty = x => !!x
  // &&
  //    typeof props.onSortInfoChange == 'function'
 
@@ -223,6 +224,13 @@ class DataGrid extends Component {
    * - if -1, then 0 (none)
    */
 
+   setSortInfo(sortInfo) {
+     this.props.onSortInfoChange(sortInfo)
+
+     if (!this.p.isSortControlled) {
+       this.setData(null, { sortInfo })
+     }
+   }
 
   /**
    * On single sort when you click on a sortable column it will begin
@@ -231,19 +239,17 @@ class DataGrid extends Component {
    * new sortInfo detemined by the new column
    */
   handleSingleSort(column) {
+    const currentSortInfo = this.p.sortInfo
+
     // if click on different column must start from begining
-    const newSortInfo = this.getNewSortInfoDescription(column,
-        (
-          this.p.sortInfo && this.p.sortInfo.index ===
-          column.index && this.p.sortInfo.dir
-        )
+    const newSortInfo = this.getNewSortInfoDescription(
+        column,
+        currentSortInfo &&
+        currentSortInfo.index === column.index &&
+        currentSortInfo.dir
       )
 
-    this.props.onSortInfoChange(newSortInfo)
-
-    if (!this.p.isSortControlled) {
-      this.setData(null, { sortInfo: newSortInfo })
-    }
+    this.setSortInfo(newSortInfo)
   }
 
   /**
@@ -254,19 +260,40 @@ class DataGrid extends Component {
   handleMultipleSort(column) {
     const sortInfo = this.p.sortInfo
 
+    let newSortInfo
     if (!sortInfo.length) {
-      // is empty
-      this.setState({
-        sortInfo: this.getNewSortInfoDescription(column)
-      })
+      newSortInfo = [
+        this.getNewSortInfoDescription(column)
+      ]
     } else {
-      // determine if it is new
       const sortInfoIndex = getIndexBy(sortInfo, 'index', column.index)
+      const existingColumnSortInfo = sortInfo[sortInfoIndex]
+
+      const newColumnSortInfo = this.getNewSortInfoDescription(
+        column,
+        existingColumnSortInfo ?
+          existingColumnSortInfo.dir:
+          null
+        )
+
+      if (existingColumnSortInfo) {
+        //replace the existing with the new
+        newSortInfo = [
+          ...sortInfo.slice(0, sortInfoIndex),
+          newColumnSortInfo,
+          ...sortInfo.slice(sortInfoIndex + 1)
+        ]
+      } else {
+        newSortInfo = [...sortInfo, newColumnSortInfo]
+      }
     }
+
+    this.setSortInfo(newSortInfo.filter(notEmpty))
   }
 
   getNewSortInfoDescription(column, dir) {
-    let newSortInfo = {}
+    const newSortInfo = {}
+
     let newDir
 
     if (!dir || dir === 0) {
@@ -277,7 +304,10 @@ class DataGrid extends Component {
       // newSortInfo shoud be null in this case
       // this means there is no sort
       // so there is no need to sort with nothing
-      return null
+      if (this.props.allowUnsort || this.p.isMultiSort) {
+        return null
+      }
+      newDir = 1
     }
 
     newSortInfo.dir = newDir
@@ -548,8 +578,9 @@ DataGrid.defaultProps = {
   scrollbarWidth: 20,
   rowPlaceholder: false,
   defaultSortInfo: null,
-  sortable: false,
-  rowHeight: 40,
+  sortable: true,
+  allowUnsort: true,
+  rowHeight: 40
 }
 
 DataGrid.propTypes = {
@@ -557,7 +588,7 @@ DataGrid.propTypes = {
   loading: PropTypes.bool,
   header: PropTypes.bool,
   defaultLoading : PropTypes.bool,
-
+  allowUnsrt : PropTypes.bool,
 
   // row config
   onRowMouseEnter: PropTypes.func,
