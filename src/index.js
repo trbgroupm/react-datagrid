@@ -17,8 +17,9 @@ import 'react-load-mask/index.css'
 
 const SCREEN_HEIGHT = global.screen && global.screen.height
 
-const isSortControlled = (props) => props.sortInfo !== undefined &&
-    typeof props.onSortInfoChange == 'function'
+const isSortControlled = (props) => props.sortInfo !== undefined
+ // &&
+ //    typeof props.onSortInfoChange == 'function'
 
 class DataGrid extends Component {
   constructor(props) {
@@ -32,7 +33,7 @@ class DataGrid extends Component {
       data: false,
       selected: props.defaultSelected,
       activeIndex: props.defaultActiveIndex,
-      sortInfo: props.defaultSortInfo || props.sortInfo
+      sortInfo: props.defaultSortInfo || props.sortInfo || {}
     }
   }
 
@@ -204,6 +205,7 @@ class DataGrid extends Component {
   }
 
   onHeaderSortClick(props) {
+
     const column = this.getColumn(props.index)
 
     if (this.p.isMultiSort) {

@@ -18,7 +18,8 @@ const columns = [
     className: 'test'
   }, {
     name: 'age',
-    type: 'number'
+    type: 'number',
+    sortable: false
   }, {
     name: 'id',
     type: 'number'
@@ -118,7 +119,8 @@ class App extends Component {
         dataSource={this.state.data}
         showCellBorders={this.state.showCellBorders}
         columns={columns}
-        defaultSortInfo={[]}
+        xsortInfo={{}}
+        xonSortInfoChange={(info) => console.log('sort change',info)}
         defaultActiveIndex={0}
         renderRow={(rowProps) => {
           // if (rowProps.data.error) {

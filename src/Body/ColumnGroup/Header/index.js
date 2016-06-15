@@ -71,11 +71,13 @@ export default class Header extends Component {
         name,
         title,
         index,
+        sortable: sortableColumn
       } = column
 
+      const isSortable = sortable && sortableColumn !== false
       let cellSortInfo = null
 
-      if (sortable && sortInfo) {
+      if (isSortable && sortInfo) {
         if (isMultiSort) {
           const sortInfoIndex = getIndexBy(sortInfo, 'name', name)
           cellSortInfo = sortInfoIndex !== -1 ? sortInfo[sortInfoIndex] : null
@@ -104,7 +106,7 @@ export default class Header extends Component {
         value={value}
         onClick={this.props.onCellClick}
         onSortClick={this.props.onSortClick}
-        sortable={sortable}
+        sortable={isSortable}
         sortInfo={cellSortInfo}
       />
     })
