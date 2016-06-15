@@ -4,13 +4,6 @@
   .react-datagrid:focus {
     outline: none; }
 
-/*----------  Header  ----------*/
-.react-datagrid__header {
-  border-top: 1px solid #e4e4e4;
-  border-bottom: 1px solid #e4e4e4; }
-
-/*----------  Body  ----------*/
-/*----------  Scroller  ----------*/
 /*----------  Row  ----------*/
 .react-datagrid__row--hover {
   background: #bfbfbf; }
@@ -28,20 +21,18 @@
   border-bottom: 1px solid #c2c2c2;
   font-weight: 600; }
 
-/*----------  Cell & Column-header  ----------*/
-.react-datagrid__cell,
+.react-datagrid__cell {
+  padding: 10px 5px; }
+
 .react-datagrid__column-header {
   padding: 10px 5px;
-  font-size: 14px; }
-
-/*-----  Column Header  -----*/
-.react-datagrid__column-header {
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
-  border-right: 1px solid #c2c2c2; }
+  border-right: 1px solid #c2c2c2;
+  line-height: 1.6; }
   .react-datagrid__column-header--sortable {
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
     cursor: pointer; }
 
 /*----------  Cell  ----------*/
@@ -56,4 +47,6 @@
 .react-datagrid--cell-borders-vertical .react-datagrid__cell {
   border-right: 1px solid #c2c2c2; }
 
+/*----------  Body  ----------*/
+/*----------  Scroller  ----------*/
 /*----------  Load Mask  ----------*/
