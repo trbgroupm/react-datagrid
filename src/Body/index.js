@@ -131,7 +131,6 @@ class Body extends Component {
         this.state.isScrolling && 'react-datagrid__body--scrolling'
       )
 
-    const isEmpty = (Array.isArray(data) && data.length === 0) || data === null && !loading
 
     return <Item
       flex
@@ -142,12 +141,7 @@ class Body extends Component {
     >
       <div className="react-datagrid__column-group__header react-datagrid__column-group__header--placeholder" style={{height: this.state.headerHeight, width: '100%'}}/>
       {resizeTool}
-      {
-        isEmpty ?
-          <EmptyText emptyText={this.props.emptyText} />
-          :
-          this.renderScroller()
-      }
+      {this.renderScroller()}
     </Item>
   }
 
@@ -215,8 +209,10 @@ class Body extends Component {
      * cache scrollTop and fromTo
      * const {from, to} = getDataRangeToRender(bodyHeight, rowHeight, scrollTop, extraRows)
     **/
+
+    this.fromTo = getDataRangeToRender(bodyHeight, rowHeight, scrollTop, extraRows)
+
     if ((Math.abs(this.oldScrollTop - scrollTop - rowHeight) >= buffer) || !this.fromTo) {
-      this.fromTo = getDataRangeToRender(bodyHeight, rowHeight, scrollTop, extraRows)
       this.oldScrollTop = scrollTop
       bufferValid = false
     }

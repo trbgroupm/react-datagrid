@@ -13,24 +13,19 @@ import Perf from 'react-addons-perf'
 const data = gen2(10000)
 const columns = [
   {
-    name: 'name',
+    name: 'firstName',
     titleClassName: 'helloHEader',
     className: 'test'
   }, {
-    name: 'age',
+    name: 'grade',
     type: 'number'
   }, {
-    name: 'id',
+    name: 'index',
     type: 'number'
-  },{
-    name: 'gender'
   }, {
-    name: 'location',
+    name: 'country',
     minWidth: 350,
   }, {
-    name: 'status',
-    minWidth: 350,
-  } , {
     title: 'Actions',
     minWidth: 350,
     render({value, data, cellProps}) {
@@ -50,6 +45,43 @@ const columns = [
   return c
 })
 
+const remoteData = ({ sortInfo, skip, limit }) => {
+
+  return new Promise((resolve) => {
+
+    let query = {
+      // delay: 5000
+    }
+
+    if (skip !== undefined) {
+      query.skip = skip
+    }
+
+    if (limit !== undefined) {
+      query.limit = limit
+    }
+
+    if (sortInfo) {
+      query.sortInfo = JSON.stringify(sortInfo)
+    }
+
+    if (Object.keys(query).length) {
+      query = '?' + Object.keys(query).map((key) => {
+        return `${key}=${query[key]}`
+      }).join('&')
+    }
+
+    fetch(`http://localhost:8080/fake-api/person10${query}`)
+      .then(r => {
+        return r.json()
+      })
+      .then(json => {
+        setTimeout(() => {
+          resolve(json)
+        }, 300)
+      })
+  })
+}
 
 class App extends Component {
   constructor(props){
@@ -93,6 +125,11 @@ class App extends Component {
         >
           Add Height
         </button>
+        <button onClick={() => this.refs.grid.gotoFirstPage()}>{'|<'}</button>
+        <button onClick={() => this.refs.grid.gotoPrevPage()}>{'<'}</button>
+        <button onClick={() => this.refs.grid.gotoNextPage()}>{'>'}</button>
+        <button onClick={() => this.refs.grid.gotoLastPage()}>{'>|'}</button>
+
         <button
           style={{
             marginBottom: 10
@@ -111,11 +148,15 @@ class App extends Component {
       </div>
 
       <DataGrid
+        ref="grid"
         sortable={this.state.sortable}
         autoFocus
+        limit={4}
         keyPageStep={1000}
+        emptyText="no data"
+        pagination
         idProperty={'id'}
-        dataSource={this.state.data}
+        dataSource={remoteData}
         showCellBorders={this.state.showCellBorders}
         columns={columns}
         defaultSortInfo={[]}

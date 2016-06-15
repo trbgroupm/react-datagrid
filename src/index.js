@@ -10,6 +10,7 @@ import getIndexBy from './utils/getIndexBy'
 import sorty from 'sorty'
 
 import clamp from './utils/clamp'
+import paginate from './utils/paginate'
 import Body from './Body'
 import ColumnGroup from './Body/ColumnGroup'
 
@@ -26,12 +27,14 @@ class DataGrid extends Component {
   constructor(props) {
     super(props)
 
-    const isLoading = props.dataSource && !!props.dataSource.then
+    const isLoading = props.dataSource && (!!props.dataSource.then || typeof props.dataSource == 'function')
 
     this.state = {
       loading: isLoading,
       focused: false,
-      data: false,
+      data: [],
+      skip: props.defaultSkip,
+      limit: props.limit,
       selected: props.defaultSelected,
       activeIndex: props.defaultActiveIndex,
       sortInfo: props.defaultSortInfo || props.sortInfo || {}
@@ -45,7 +48,7 @@ class DataGrid extends Component {
     }
 
     // load data
-    this.loadSourceData(this.props.dataSource, this.props)
+    this.loadSourceData(this.props.dataSource, this.p)
   }
 
   componentWillReceiveProps(nextProps, nextState) {
@@ -53,7 +56,7 @@ class DataGrid extends Component {
     // needs to be updated if dataSource changes
 
     if (this.props.dataSource !== nextProps.dataSource) {
-      this.loadSourceData(nextProps.dataSource, nextProps)
+      this.loadSourceData(nextProps.dataSource, this.prepareProps(nextProps, nextState))
     }
 
     if (this.props.sortInfo != nextProps.sortInfo) {
@@ -227,7 +230,13 @@ class DataGrid extends Component {
    setSortInfo(sortInfo) {
      this.props.onSortInfoChange(sortInfo)
 
-     if (!this.p.isSortControlled) {
+     const controlled = this.p.isSortControlled
+
+     if (this.isRemoteSort()){
+       setTimeout(() => this.loadSourceData())
+     }
+
+     if (!controlled) {
        this.setData(null, { sortInfo })
      }
    }
@@ -340,13 +349,27 @@ class DataGrid extends Component {
     return columns[index]
   }
 
+  reload() {
+    this.loadSourceData()
+  }
+
   // handles source data it it is array, it is passed directly to setData
   // if is a promise, sets loading flat to true, when resolves passes data to setData
   loadSourceData(dataSource, props){
 
+    props = props || this.p
+
     if (dataSource === null) {
       this.setData(null)
       return
+    }
+
+    if (dataSource === undefined) {
+      dataSource = props.dataSource
+    }
+
+    if (typeof dataSource == 'function'){
+      dataSource = dataSource(props)
     }
 
     if (Array.isArray(dataSource)) {
@@ -363,19 +386,71 @@ class DataGrid extends Component {
       })
 
       dataSource.then(data => {
+        let count
+
+        if (data.data) {
+          count = data.count
+          data = data.data
+        }
+
         if (!Array.isArray(data)) {
           throw new Error(`dataSource Promise did not return an array, it returned a ${typeof data}`)
         }
 
-        this.setData(data)
+        this.setData(data, { count })
       })
     }
   }
 
-  sortData(sortInfo, data){
-    if (sortInfo) {
-      return sorty(sortInfo, data)
+  isRemoteData(props) {
+    props = props || this.props
+
+    return !!props.dataSource.then || typeof props.dataSource == 'function'
+  }
+
+  isPagination(props) {
+    return !!props.pagination
+  }
+
+  isRemotePagination(props) {
+    props = props || this.props
+
+    const { remotePagination, pagination } = props
+
+    if (pagination == 'local' || remotePagination === false) {
+      return false
     }
+
+    return pagination == 'remote' || remotePagination === true || (remotePagination === undefined && this.isRemoteData(this.props))
+  }
+
+  isRemoteSort(props) {
+    props = props || this.props
+
+    const { remoteSort } = props
+
+    return remoteSort === true || (remoteSort === undefined && this.isRemoteData(this.props))
+  }
+
+  paginateData(data, { skip, limit }, props) {
+    props = props || this.props
+    if (this.isPagination(props) && !this.isRemotePagination(props)){
+      data = paginate(data, { skip, limit })
+    }
+
+    return data
+  }
+
+  sortData(data, sortInfo) {
+    if (!sortInfo) {
+      return data
+    }
+
+    if (this.isRemoteSort()) {
+      return data
+    }
+
+    return sorty(sortInfo, [...data])
   }
 
   /**
@@ -384,6 +459,7 @@ class DataGrid extends Component {
    * { idProperty: {..}, .. }
    */
   setData(data, config) {
+    config = config || {}
     const preparedProps = this.p
     const {
       selected,
@@ -401,21 +477,39 @@ class DataGrid extends Component {
       newDataState.originalData = data
     }
 
+    if (config.count !== undefined) {
+      newDataState.remoteCount = config.count
+    }
+
     data = data || this.state.originalData
 
     let sortInfo
-    if (config && config.sortInfo !== undefined) {
+    if (config.sortInfo !== undefined) {
       sortInfo = config.sortInfo
       newDataState.sortInfo = sortInfo
     } else if (preparedProps.sortInfo !== undefined) {
       sortInfo = preparedProps.sortInfo
     }
 
-    if (sortInfo) {
-      newDataState.data = this.sortData(sortInfo, [...data])
-    } else {
-      newDataState.data = data
+    const skipLimit = {
+      skip: preparedProps.skip,
+      limit: preparedProps.limit
     }
+
+    if (config.skip !== undefined) {
+      skipLimit.skip = config.skip
+      newDataState.skip = config.skip
+    }
+
+    if (config.limit !== undefined) {
+      limitLimit.limit = config.limit
+      newDataState.limit = config.limit
+    }
+
+    data = this.sortData(data, sortInfo)
+    data = this.paginateData(data, skipLimit, preparedProps)
+
+    newDataState.data = data
 
     // make dataMap only if selected is used
     if (this.isSelectionEnabled() && data !== null) {
@@ -486,7 +580,7 @@ class DataGrid extends Component {
     const hasSelection = !this.isSelectionEmpty()
 
     /**
-     * content height, is the hight of the container that hods all the rows, if the all the rows
+     * content height, is the hight of the container that holds all the rows, if the all the rows
      * are rendered, it is used for virtual scroll, based on it we know what to render
      */
     const contentHeight = props.rowHeight * (state.data ? state.data.length : 0) + props.scrollbarWidth
@@ -505,8 +599,11 @@ class DataGrid extends Component {
     const isMultiSort = Array.isArray(sortInfo)
 
     const data = state.data
+    const skip = props.skip === undefined ? state.skip : props.skip
 
     props = assign({}, props, {
+      skip,
+      remoteCount: this.state.remoteCount,
       loading,
       selected,
       hasSelection,
@@ -558,9 +655,92 @@ class DataGrid extends Component {
   getBodyHeight() {
     return this.refs.body.component.getBodyHeight()
   }
+
+  incrementSkip(amount, props) {
+    props = props || this.p
+
+    this.setSkip(props.skip + amount)
+  }
+
+  setSkip(value) {
+
+    if (this.props.onSkipChange) {
+      this.props.onSkipChange(value)
+    }
+
+    if (this.isRemotePagination()){
+      setTimeout(() => this.loadSourceData())
+    }
+
+    if (this.props.skip === undefined) {
+      this.setData(null, { skip: value })
+    }
+  }
+
+  hasNextPage(props) {
+    return this.getCurrentPage(props) < this.getPageCount(props)
+  }
+
+  hasPrevPage(props) {
+    return this.getCurrentPage(props) > 1
+  }
+
+  getCurrentPage(props) {
+    props = props || this.p
+
+    return Math.ceil((props.skip - 1) / props.limit) + 1 //it's 1 based
+  }
+
+  getPageCount(props) {
+    props = props || this.p
+
+    const data = this.state.originalData || props.data
+    const count = props.remoteCount !== undefined ? props.remoteCount : data.length
+
+    return Math.ceil(count / props.limit)
+  }
+
+  gotoPage(page, props) {
+    props = props || this.p
+
+    //page is 1-based
+    page = clamp(page, 1, this.getPageCount(props))
+
+    if (page === this.getCurrentPage(props)){
+      return
+    }
+
+    this.setSkip(props.limit * (page - 1))
+  }
+
+  gotoLastPage(props) {
+    this.gotoPage(this.getPageCount(props))
+  }
+
+  gotoFirstPage() {
+    this.gotoPage(1)
+  }
+
+  gotoNextPage(props) {
+    props = props || this.p
+
+    if (this.hasNextPage(props)) {
+      this.incrementSkip(props.limit, props)
+    }
+  }
+
+  gotoPrevPage(props) {
+    props = props || this.p
+
+    if (this.hasPrevPage(props)) {
+      this.incrementSkip(-props.limit, props)
+    }
+  }
 }
 
 DataGrid.defaultProps = {
+  defaultSkip: 0,
+  limit: 10,
   showCellBorders: true,
   keyPageStep: 10,
   defaultLoading: false,
@@ -672,10 +852,11 @@ DataGrid.propTypes = {
 
     if (
         dataSource !== null &&
+        typeof dataSource !== 'function' &&
         !Array.isArray(dataSource) &&
         !(dataSource && dataSource.then)
       ) {
-      return new Error('dataSource must be an array, null or a promise.')
+      return new Error('dataSource must be an array, null, a promise or a function returning a promise.')
     }
   },
   onDataSourceResponse: PropTypes.func,

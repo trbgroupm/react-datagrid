@@ -130,8 +130,8 @@ export default class Cell extends Component {
     const { props } = this
     const { children } = cellProps
 
-    if (cellProps.sortable) {
-      const sortTools = this.getSortTools(cellProps.sortInfo ? cellProps.sortInfo.dir : null)
+    // if (cellProps.sortable) {
+      const sortTools = this.getSortTools(cellProps.sortInfo ? cellProps.sortInfo.dir : null, cellProps)
 
       cellProps.children = [
         children,
@@ -146,7 +146,7 @@ export default class Cell extends Component {
           `${props.headerCellDefaultClassName}--sort-${dirName}`
         )
       }
-    }
+    // }
 
     return cellProps
   }
@@ -162,11 +162,11 @@ export default class Cell extends Component {
   }
 
   // direction can be 1, -1 or null
-  getSortTools(direction = null) {
+  getSortTools(direction = null, cellProps) {
     const { props } = this
 
     if (props.renderSortTool) {
-      return props.renderSortTool(direction)
+      return props.renderSortTool(direction, cellProps)
     }
 
     let visibilityClassName = ''
@@ -190,6 +190,7 @@ const emptyFn = () => {}
 Cell.defaultProps = {
   cellDefaultClassName: cellBem(),
   headerCellDefaultClassName: headerBem(),
+
   minWidth: 40,
 
   onSortClick: emptyFn
