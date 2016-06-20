@@ -144,10 +144,10 @@ class Scroller extends Component {
     }
 
 
-    this.onScroll(newScrollTop)
+    this.onScroll(newScrollTop, event)
   }
 
-  onTouchStart(event){
+  onTouchStart(event) {
     DragHelper(event.nativeEvent, {
       scope: this,
       onDragStart: (event, config) => {

@@ -56,7 +56,8 @@
   }
 }
 
-.react-datagrid__column-group__body {}
+.react-datagrid__column-group__body {
+}
 
 .react-datagrid__column-group__body__inner-wrapper {
   position: relative;
@@ -113,14 +114,52 @@
   background: #EAECEF;
 }
 
+.react-datagrid__resize-overlay {
+  display: none;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  cursor: col-resize;
+
+  &--active {
+    display: block;
+  }
+}
+
+.react-datagrid__resize-proxy {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: 100%;
+}
+
 /*----------  Cell & Column-header  ----------*/
-.react-datagrid__cell,
-.react-datagrid__column-header {
+.react-datagrid__box--ellipsis,
+.react-datagrid__cell {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
+.react-datagrid__column-header__resize-wrapper {
+  position: relative;
+}
+
+.react-datagrid__column-resizer {
+  position: absolute;
+  z-index: 10;
+  height: 100%;
+  top: 0px;
+  cursor: col-resize;
+}
+
+.react-datagrid__column-resizer-handle {
+  width: 100%;
+  height: 100%;;
+}
 
 /*----------  Cell  ----------*/
 .react-datagrid__cell {}
@@ -160,3 +199,4 @@
 }
 
 @import '~react-flex/index.scss';
+@import '~react-load-mask/index.css';

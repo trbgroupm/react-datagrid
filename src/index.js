@@ -4,6 +4,7 @@ import Component from 'react-class'
 
 import { Flex, Item } from 'react-flex'
 import assign from 'object-assign'
+import assignDefined from 'assign-defined'
 import join from './join'
 import LoadMask from 'react-load-mask'
 import getIndexBy from './utils/getIndexBy'
@@ -14,27 +15,37 @@ import paginate from './utils/paginate'
 import Body from './Body'
 import ColumnGroup from './Body/ColumnGroup'
 
-import 'react-load-mask/index.css'
-
 const SCREEN_HEIGHT = global.screen && global.screen.height
 
 const isSortControlled = (props) => props.sortInfo !== undefined
 const notEmpty = x => !!x
- // &&
- //    typeof props.onSortInfoChange == 'function'
+const emptyFn = () => {}
+const emptyObject = Object.freeze? Object.freeze({}): {}
+
+const arrayOrObject = (obj) => Array.isArray(obj) ? 'array': 'object'
 
 class DataGrid extends Component {
+
   constructor(props) {
     super(props)
 
-    const isLoading = props.dataSource && (!!props.dataSource.then || typeof props.dataSource == 'function')
+    const { dataSource } = props
+
+    const loading = dataSource && (!!dataSource.then || typeof dataSource == 'function')
+    const isArray = Array.isArray(dataSource)
+
+    const data = isArray ? dataSource : []
 
     this.state = {
-      loading: isLoading,
       focused: false,
-      data: [],
+
+      originalData: data,
+      data,
+      loading,
+
       skip: props.defaultSkip,
       limit: props.limit,
+
       selected: props.defaultSelected,
       activeIndex: props.defaultActiveIndex,
       sortInfo: props.defaultSortInfo || props.sortInfo || {}
@@ -42,28 +53,45 @@ class DataGrid extends Component {
   }
 
   componentDidMount() {
-
     if (this.props.autoFocus) {
       this.focus()
     }
 
-    // load data
-    this.loadSourceData(this.props.dataSource, this.p)
+    this.loadSourceData(this.props.dataSource)
   }
 
   componentWillReceiveProps(nextProps, nextState) {
-    // data is cached in state
-    // needs to be updated if dataSource changes
+    const propsArrOrObject = arrayOrObject(this.props.defaultSortInfo)
+    const nextPropsArrOrObject = arrayOrObject(nextProps.defaultSortInfo)
+
+    if (propsArrOrObject != nextPropsArrOrObject) {
+      // in order to react to defaultSortInfo type change
+      // and update the state from multi to single sort, or the other way around
+      this.setState({
+        sortInfo: nextProps.defaultSortInfo || {}
+      })
+    }
 
     if (this.props.dataSource !== nextProps.dataSource) {
-      this.loadSourceData(nextProps.dataSource, this.prepareProps(nextProps, nextState))
+      const preparedProps = this.prepareProps(nextProps, assign({}, this.state, nextState))
+      this.loadSourceData(nextProps.dataSource, null, preparedProps)
     }
 
-    if (this.props.sortInfo != nextProps.sortInfo) {
-      setTimeout(() => {
-        this.setData(null, { sortInfo: nextProps.sortInfo })
-      }, 0)
+    // if (this.props.sortInfo != nextProps.sortInfo) {
+    //   setTimeout(() => {
+    //     this.setData(null, { sortInfo: nextProps.sortInfo })
+    //   }, 0)
+    // }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (!prevProps.autoFocus && this.props.autoFocus && !this.isFocused()) {
+      this.focus()
     }
+  }
+
+  isFocused() {
+    return !!this.state.focused
   }
 
   render() {
@@ -94,6 +122,7 @@ class DataGrid extends Component {
       {loading && this.renderLoadMask()}
       <Body
         {...preparedProps}
+        onScrollBottom={this.onScrollBottom}
         ref="body"
         onRowClick={this.onRowClick}
         onHeaderCellClick={this.onHeaderCellClick}
@@ -113,6 +142,14 @@ class DataGrid extends Component {
     }
 
     return <LoadMask {...props} />
+  }
+
+  onScrollBottom(event) {
+    this.props.onScrollBottom()
+
+    if (this.props.livePagination) {
+      this.gotoNextPage()
+    }
   }
 
   focus() {
@@ -140,24 +177,37 @@ class DataGrid extends Component {
 
     this.props.onKeyDown(event)
 
+    let handled
+
     if (key == 'ArrowUp') {
       this.incrementActiveIndex(-1)
+      handled = true
     }
     if (key == 'ArrowDown') {
       this.incrementActiveIndex(1)
+      handled = true
     }
+
     if (key == 'Home') {
       this.changeActiveIndex(0)
+      handled = true
     }
     if (key == 'End') {
       this.changeActiveIndex(this.p.data.length - 1)
+      handled = true
     }
 
     if (key == 'PageUp') {
       this.incrementActiveIndex(this.props.keyPageStep * -1)
+      handled = true
     }
     if (key == 'PageDown') {
       this.incrementActiveIndex(this.props.keyPageStep)
+      handled = true
+    }
+
+    if (handled) {
+      event.preventDefault()
     }
   }
 
@@ -178,6 +228,7 @@ class DataGrid extends Component {
     newIndex = clamp(newIndex, 0, this.p.data.length - 1)
 
     if (newIndex === this.p.activeIndex) {
+      //if the new index is the same with the current index, do nothing
       return
     }
 
@@ -205,41 +256,15 @@ class DataGrid extends Component {
   }
 
   onHeaderCellClick(event, props) {
-
   }
 
   onHeaderSortClick(props) {
-
     const column = this.getColumn(props.index)
 
-    if (this.p.isMultiSort) {
-      this.handleMultipleSort(column)
-    } else {
+    this.p.isMultiSort ?
+      this.handleMultipleSort(column) :
       this.handleSingleSort(column)
-    }
   }
-
-  /**
-   * Sorting
-   *   order of sort change
-   * - if none, then 1 (asc)
-   * - if 1, then -1 (desc)
-   * - if -1, then 0 (none)
-   */
-
-   setSortInfo(sortInfo) {
-     this.props.onSortInfoChange(sortInfo)
-
-     const controlled = this.p.isSortControlled
-
-     if (this.isRemoteSort()){
-       setTimeout(() => this.loadSourceData())
-     }
-
-     if (!controlled) {
-       this.setData(null, { sortInfo })
-     }
-   }
 
   /**
    * On single sort when you click on a sortable column it will begin
@@ -355,8 +380,9 @@ class DataGrid extends Component {
 
   // handles source data it it is array, it is passed directly to setData
   // if is a promise, sets loading flat to true, when resolves passes data to setData
-  loadSourceData(dataSource, props){
+  loadSourceData(dataSource, config, props) {
 
+    config = config || emptyObject
     props = props || this.p
 
     if (dataSource === null) {
@@ -373,7 +399,7 @@ class DataGrid extends Component {
     }
 
     if (Array.isArray(dataSource)) {
-      this.setData(dataSource)
+      this.setData(dataSource, config)
     }
 
     if (dataSource.then) {
@@ -381,15 +407,13 @@ class DataGrid extends Component {
         dataSource.then(props.onDataSourceResponse, props.onDataSourceResponse)
       }
 
-      this.setState({
-        loading: true
-      })
+      this.setLoading(true)
 
       dataSource.then(data => {
-        let count
+        let remoteCount
 
         if (data.data) {
-          count = data.count
+          remoteCount = data.count
           data = data.data
         }
 
@@ -397,133 +421,182 @@ class DataGrid extends Component {
           throw new Error(`dataSource Promise did not return an array, it returned a ${typeof data}`)
         }
 
-        this.setData(data, { count })
+        this.setData(data, assign({ remoteCount }, config))
       })
     }
   }
 
-  isRemoteData(props) {
-    props = props || this.props
-
-    return !!props.dataSource.then || typeof props.dataSource == 'function'
-  }
-
-  isPagination(props) {
-    return !!props.pagination
-  }
-
-  isRemotePagination(props) {
-    props = props || this.props
-
-    const { remotePagination, pagination } = props
-
-    if (pagination == 'local' || remotePagination === false) {
-      return false
+  setLoading(bool) {
+    if (bool === undefined) {
+      bool = true
     }
 
-    return pagination == 'remote' || remotePagination === true || (remotePagination === undefined && this.isRemoteData(this.props))
-  }
-
-  isRemoteSort(props) {
-    props = props || this.props
-
-    const { remoteSort } = props
-
-    return remoteSort === true || (remoteSort === undefined && this.isRemoteData(this.props))
-  }
-
-  paginateData(data, { skip, limit }, props) {
-    props = props || this.props
-    if (this.isPagination(props) && !this.isRemotePagination(props)){
-      data = paginate(data, { skip, limit })
-    }
-
-    return data
-  }
-
-  sortData(data, sortInfo) {
-    if (!sortInfo) {
-      return data
-    }
-
-    if (this.isRemoteSort()) {
-      return data
-    }
-
-    return sorty(sortInfo, [...data])
+    this.setState({
+      loading: bool
+    })
   }
 
   /**
-   * updates state with data removes loading flag
-   * and if selection is enabled creates a hasmap from the data
-   * { idProperty: {..}, .. }
+   * Set the data array for the grid
+   *
+   * @param {Array/null} data - if data is null, the grid data will be reset to
+   * the original data array.
+   * @param {Object} [config]
+   * @param {Number} [config.append]
+   * @param {Number} [config.skip]
+   * @param {Number} [config.limit]
+   * @param {Number} [config.remoteCount]
+   * @param {Number} [config.sortInfo]
+   * @param {Object} [preparedProps]
    */
-  setData(data, config) {
-    config = config || {}
-    const preparedProps = this.p
-    const {
-      selected,
-      defaultSelected,
-      onSelectionChange,
-      sortable,
-      isSortControlled,
-    } = preparedProps
+  setData(data, config, preparedProps, callback) {
+    config = config || emptyObject
+    if (callback === undefined && typeof preparedProps == 'function') {
+      callback = preparedProps
+      preparedProps = null
+    }
+    preparedProps = preparedProps || this.p
 
-    let newDataState = {
+    const newState = assignDefined({
       loading: false
+    }, config)
+
+    if (Array.isArray(data)) {
+      if (preparedProps.livePagination && config.append) {
+        data = [
+          ...this.state.originalData,
+          ...data
+        ]
+      }
+      //this is the new source of truth data array
+      newState.originalData = data
+    } else {
+      //get the original source of truth array
+      data = this.state.originalData
     }
 
-    if (data) {
-      newDataState.originalData = data
-    }
+    const sortInfo = newState.sortInfo !== undefined ?
+      newState.sortInfo :
+      preparedProps.sortInfo
 
-    if (config.count !== undefined) {
-      newDataState.remoteCount = config.count
-    }
+    const skip = newState.skip !== undefined ?
+      newState.skip :
+      preparedProps.skip
 
-    data = data || this.state.originalData
+    const limit = newState.limit !== undefined ?
+      newState.limit :
+      preparedProps.limit
 
-    let sortInfo
-    if (config.sortInfo !== undefined) {
-      sortInfo = config.sortInfo
-      newDataState.sortInfo = sortInfo
-    } else if (preparedProps.sortInfo !== undefined) {
-      sortInfo = preparedProps.sortInfo
-    }
-
-    const skipLimit = {
-      skip: preparedProps.skip,
-      limit: preparedProps.limit
-    }
-
-    if (config.skip !== undefined) {
-      skipLimit.skip = config.skip
-      newDataState.skip = config.skip
-    }
-
-    if (config.limit !== undefined) {
-      limitLimit.limit = config.limit
-      newDataState.limit = config.limit
-    }
+    const skipLimit = { skip, limit }
 
     data = this.sortData(data, sortInfo)
     data = this.paginateData(data, skipLimit, preparedProps)
 
-    newDataState.data = data
+    newState.data = data
 
     // make dataMap only if selected is used
     if (this.isSelectionEnabled() && data !== null) {
-      newDataState.dataMap = data.reduce((acc, item) => {
+      newState.dataMap = data.reduce((acc, item) => {
         acc[this.getItemId(item)] = item
         return acc
       }, {})
     }
 
-    this.setState(newDataState)
+    this.setState(newState, callback)
   }
 
   getItemId(item) {
     return item[this.props.idProperty]
+  }
+
+  /**
+   * creates an object with props, that can come from
+   * this.props, this.state, or computed
+   * it is helpful to have a single point of access
+   */
+  prepareProps(props, state) {
+    const loading = props.loading == undefined ?
+                    this.state.loading :
+                    props.loading
+
+    const selected = this.getSelected()
+    const hasSelection = !this.isSelectionEmpty()
+
+    /**
+     * content height, is the hight of the container that holds all the rows, if the all the rows
+     * are rendered, it is used for virtual scroll, based on it we know what to render
+     */
+    const contentHeight = props.rowHeight * (state.data ? state.data.length : 0) + props.scrollbarWidth
+    const isMultiselect = typeof selected === 'object' && selected !== null
+
+    // active index is used for rows navigation
+    const activeIndex = props.activeIndex !== undefined ? props.activeIndex : this.state.activeIndex
+    const hasNavigation = activeIndex !== undefined
+    const isActiveIndexControlled = this.props.activeIndex !== undefined
+
+    // sortInfo
+    // if is controleld use props, if not sortinfo
+    const sortControlled = isSortControlled(this.props)
+
+    const sortInfo = sortControlled ? props.sortInfo : this.state.sortInfo
+    const isMultiSort = Array.isArray(sortInfo)
+
+    const data = state.data
+    const skip = props.skip === undefined ? state.skip : props.skip
+
+    props = assign({}, props, assignDefined({}, {
+      skip,
+      remoteCount: this.state.remoteCount,
+      loading,
+      selected,
+      hasSelection,
+      contentHeight,
+      isMultiselect,
+      data,
+      activeIndex,
+      isActiveIndexControlled,
+      hasNavigation,
+      sortInfo,
+      isMultiSort,
+      isSortControlled: sortControlled
+    }))
+
+    props.className = this.prepareClassName(props)
+
+    return props
+  }
+
+  prepareClassName(props) {
+    const borders = props.showCellBorders
+
+    return join(
+      props.className,
+      'react-datagrid',
+      this.state.focused && 'react-datagrid--focused',
+      borders &&
+        `react-datagrid--cell-borders-${borders === true ? 'both' : borders}`
+    )
+  }
+
+  // exposed methods on body component
+  scrollAt(scrollTop) {
+    return this.refs.body.component.scrollAt(scrollTop)
+  }
+
+  scrollToIndex(...args) {
+    return this.refs.body.component.scrollToIndex(...args)
+  }
+
+  scrollToId(...args) {
+    return this.refs.body.component.scrollToId(...args)
+  }
+
+  getScrollTop() {
+    return this.refs.body.component.getScrollTop()
+  }
+
+  getBodyHeight() {
+    return this.refs.body.component.getBodyHeight()
   }
 
   getSelected() {
@@ -566,94 +639,82 @@ class DataGrid extends Component {
     return selectionEmpty
   }
 
+  isRemoteData(props) {
+    props = props || this.props
+
+    if (!props.dataSource) {
+      return false
+    }
+
+    return !!props.dataSource.then || typeof props.dataSource == 'function'
+  }
+
+  isPagination(props) {
+    return !!props.pagination
+  }
+
+  isRemotePagination(props) {
+    props = props || this.props
+
+    const { remotePagination, pagination } = props
+
+    if (pagination == 'local' || remotePagination === false) {
+      return false
+    }
+
+    return pagination == 'remote' || remotePagination === true || (remotePagination === undefined && this.isRemoteData(this.props))
+  }
+
+  isRemoteSort(props) {
+    props = props || this.props
+
+    const { remoteSort } = props
+
+    return remoteSort === true || (remoteSort === undefined && this.isRemoteData(this.props))
+  }
+
+  sortData(data, sortInfo) {
+    if (!sortInfo) {
+      return data
+    }
+
+    if (this.isRemoteSort()) {
+      return data
+    }
+
+    return sorty(sortInfo, [...data])
+  }
+
   /**
-   * creates an object with props, that can come from
-   * this.props, this.state, or computed
-   * it is helpful to have a single point of access
+   * Sorting
+   *   order of sort change
+   * - if none, then 1 (asc)
+   * - if 1, then -1 (desc)
+   * - if -1, then 0 (none)
    */
-  prepareProps(props, state) {
-    const loading = props.loading == undefined ?
-                    this.state.loading :
-                    props.loading
 
-    const selected = this.getSelected()
-    const hasSelection = !this.isSelectionEmpty()
+   setSortInfo(sortInfo) {
+     this.props.onSortInfoChange(sortInfo)
 
-    /**
-     * content height, is the hight of the container that holds all the rows, if the all the rows
-     * are rendered, it is used for virtual scroll, based on it we know what to render
-     */
-    const contentHeight = props.rowHeight * (state.data ? state.data.length : 0) + props.scrollbarWidth
-    const isMultiselect = typeof selected === 'object' && selected !== null
+     if (this.p.isSortControlled) {
+       return
+     }
 
-    // active index is used for rows navigation
-    const activeIndex = props.activeIndex !== undefined ? props.activeIndex : this.state.activeIndex
-    const hasNavigation = activeIndex !== undefined
-    const isActiveIndexControlled = this.props.activeIndex !== undefined
+     this.setData(null, { sortInfo, skip: 0 }, () => {
+       if (this.isRemoteSort()) {
+         this.loadSourceData()
+       }
+     })
+   }
 
-    // sortInfo
-    // if is controleld use props, if not sortinfo
-    const sortControlled = isSortControlled(this.props)
+  ///////////// PAGINATION RELATED STUFF ///////////
+  paginateData(data, { skip, limit }, props) {
+    props = props || this.props
+    if (this.isPagination(props) && !this.isRemotePagination(props)){
+      data = paginate(data, { skip, limit })
+    }
 
-    const sortInfo = sortControlled ? props.sortInfo : this.state.sortInfo
-    const isMultiSort = Array.isArray(sortInfo)
-
-    const data = state.data
-    const skip = props.skip === undefined ? state.skip : props.skip
-
-    props = assign({}, props, {
-      skip,
-      remoteCount: this.state.remoteCount,
-      loading,
-      selected,
-      hasSelection,
-      contentHeight,
-      isMultiselect,
-      data,
-      activeIndex,
-      isActiveIndexControlled,
-      hasNavigation,
-      sortInfo,
-      isMultiSort,
-      sortControlled: isSortControlled
-    })
-
-    props.className = this.prepareClassName(props)
-
-    return props
-  }
-
-  prepareClassName(props) {
-    const borders = props.showCellBorders
-
-    return join(
-      props.className,
-      'react-datagrid',
-      this.state.focused && 'react-datagrid--focused',
-      borders &&
-        `react-datagrid--cell-borders-${borders === true ? 'both' : borders}`
-    )
-  }
-
-  // exposed methods on body component
-  scrollAt(scrollTop) {
-    return this.refs.body.component.scrollAt(scrollTop)
-  }
-
-  scrollToIndex(...args) {
-    return this.refs.body.component.scrollToIndex(...args)
-  }
-
-  scrollToId(...args) {
-    return this.refs.body.component.scrollToId(...args)
-  }
-
-  getScrollTop() {
-    return this.refs.body.component.getScrollTop()
-  }
-
-  getBodyHeight() {
-    return this.refs.body.component.getBodyHeight()
+    return data
   }
 
   incrementSkip(amount, props) {
@@ -663,18 +724,23 @@ class DataGrid extends Component {
   }
 
   setSkip(value) {
-
     if (this.props.onSkipChange) {
       this.props.onSkipChange(value)
     }
 
-    if (this.isRemotePagination()){
-      setTimeout(() => this.loadSourceData())
+    const controlled = this.props.skip !== undefined
+
+    if (controlled) {
+      return
     }
 
-    if (this.props.skip === undefined) {
-      this.setData(null, { skip: value })
-    }
+    const append = !!this.props.livePagination
+
+    this.setData(null, { skip: value, append }, () => {
+      if (this.isRemotePagination()) {
+        this.loadSourceData(undefined, { append })
+      }
+    })
   }
 
   hasNextPage(props) {
@@ -740,25 +806,26 @@ class DataGrid extends Component {
 
 DataGrid.defaultProps = {
   defaultSkip: 0,
-  limit: 10,
+  limit: 100,
   showCellBorders: true,
   keyPageStep: 10,
   defaultLoading: false,
   header: true,
-  onFocus: () => {},
-  onBlur: () => {},
-  onKeyDown: () => {},
-  onRowMouseEnter: () => {},
-  onRowMouseLeave: () => {},
-  onScrollBottom: () => {},
-  onActiveIndexChange: () => {},
-  onSortInfoChange: () => {},
+  onFocus: emptyFn,
+  onBlur: emptyFn,
+  onKeyDown: emptyFn,
+  onRowMouseEnter: emptyFn,
+  onRowMouseLeave: emptyFn,
+  onScrollBottom: emptyFn,
+  onActiveIndexChange: emptyFn,
+  onSortInfoChange: emptyFn,
   rowProps: {},
   defaultSelected: undefined,
   scrollbarWidth: 20,
   rowPlaceholder: false,
   defaultSortInfo: null,
   sortable: true,
+  resizable: true,
   allowUnsort: true,
   rowHeight: 40
 }
@@ -803,6 +870,7 @@ DataGrid.propTypes = {
     ]),
   onSelectionChange: PropTypes.func,
 
+  resizable: PropTypes.bool,
 
   // sort
   sortable: PropTypes.bool,

@@ -11,7 +11,14 @@ module.exports = {
     publicPath: '/assets/'
   },
   module: {
-    loaders: require('./loaders.config')
+    loaders: require('./loaders.config').concat([
+      {
+        test: /\.scss$/,
+        exclude: /node_modules/,
+        include: /example/,
+        loader: 'style-loader!css-loader?modules!autoprefixer-loader!sass-loader'
+      }
+    ])
   },
   externals: {
     faker: 'faker'

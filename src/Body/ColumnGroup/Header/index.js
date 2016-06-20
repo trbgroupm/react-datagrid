@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react'
+import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
 
 import assign from 'object-assign'
@@ -7,7 +8,6 @@ import { NotifyResize } from 'react-notify-resize'
 
 import Cell from '../Cell'
 
-import getIndexBy from '../../../utils/getIndexBy'
 import join from '../../../join'
 import humanize from '../../../utils/humanize'
 
@@ -61,6 +61,7 @@ export default class Header extends Component {
   renderColumns(columns) {
     const props = this.props
     const {
+      resizable,
       sortable,
       sortInfo,
       isMultiSort
@@ -71,10 +72,12 @@ export default class Header extends Component {
         name,
         title,
         index,
-        sortable: sortableColumn
+        sortable: sortableColumn,
+        resizable: resizableColumn
       } = column
 
       const isSortable = sortable && sortableColumn !== false
+      const isResizable = resizable && resizableColumn !== false
 
       let columnSortInfo
 
@@ -105,12 +108,25 @@ export default class Header extends Component {
         headerCell
         key={index}
         value={value}
+        onMount={this.onCellMount}
         onClick={this.props.onCellClick}
         onSortClick={this.props.onSortClick}
+        onResizeMouseDown={this.props.onResizeMouseDown}
         sortable={isSortable}
         sortInfo={columnSortInfo}
+        resizable={isResizable}
       />
     })
+  }
+
+  onCellMount(props, cell) {
+    this.cells = this.cells || []
+
+    this.cells[props.index] = findDOMNode(cell)
+  }
+
+  getCellDOMNodes() {
+    return this.cells
   }
 }
 

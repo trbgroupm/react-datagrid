@@ -1,0 +1,22 @@
+.materialCheckbox {
+  cursor: pointer;
+  display: inline-block;
+  user-select: none;
+  display: inline-block;
+}
+
+.materialCheckbox > * {
+  vertical-align: middle;
+}
+.materialCheckbox > :not(:first-child){
+  position: relative;
+  top: 1px;
+}
+
+.icon{
+  margin-right: 5px;
+  &.checked {
+    color: #00a6e8;
+    fill: #00a6e8;
+  }
+}

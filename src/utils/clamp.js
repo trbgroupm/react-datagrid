@@ -1,7 +1,7 @@
 export default (value, min, max) => {
   return value < min ?
     min :
-    value > max ?
+    max != null && value > max ?
       max :
       value
 }

@@ -1,12 +1,14 @@
 import React, { PropTypes } from 'react'
 import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
+import uuid from 'uuid'
 
 import assign from 'object-assign'
 import raf from 'raf'
 import { Item } from 'react-flex'
 import shallowequal from 'shallowequal'
 import flatten from 'lodash.flatten'
+import throttle from 'lodash.throttle'
 
 import getDataRangeToRender from './getDataRangeToRender'
 
@@ -42,10 +44,23 @@ class Body extends Component {
   constructor(props) {
     super(props)
 
+    this.scrollerRef = (s) => { this.scroller = s }
+
+    this.onHeaderHeightChange = throttle(
+      this.onHeaderHeightChange,
+      props.headerHeightChangeDelay,
+      {
+        leading: false
+      }
+    )
+
+    this.state = {
+      columnSizes: {}
+    }
     const columns = this.getNewColumns(props)
     const flatColumns = flatten(columns)
 
-    this.state = {
+    assign(this.state, {
       columns,
       flatColumns,
       bodyHeight: 0,
@@ -54,7 +69,7 @@ class Body extends Component {
       maxScrollTop: props.defaultScrollTop,
       isScrolling: false,
       isPlaceholderActive: false,
-    }
+    })
   }
 
   componentDidMount() {
@@ -84,12 +99,17 @@ class Body extends Component {
       }
     }
 
-    // we have to determine if any of the folowig has changed
+    this.updateColumns(nextProps)
+  }
+
+  updateColumns(props) {
+    props = props || this.props
+    // we have to determine if any of the folowing has changed
     // - columns
     // - columngrups has changed children or column prop
-    const newColumns = this.getNewColumns(nextProps)
+    const newColumns = this.getNewColumns(props)
     if (!shallowequal(newColumns, this.state.columns)) {
-      const columns = this.getNewColumns(nextProps)
+      const columns = this.getNewColumns(props)
       const flatColumns = flatten(columns)
 
       this.setState({
@@ -100,7 +120,7 @@ class Body extends Component {
   }
 
   componentWillUpdate(nextProps, nextState) {
-    if (!this.refs.scroller) {
+    if (!this.scroller) {
       return
     }
 
@@ -108,9 +128,9 @@ class Body extends Component {
         // if controlled set each time, so the scrollbar is forced to not move
         nextProps.scrollTop != null
       ) {
-        this.refs.scroller.scrollAt(nextProps.scrollTop)
+        this.scroller.scrollAt(nextProps.scrollTop)
       } else if (nextState.scrollTop !== this.state.scrollTop) {
-        this.refs.scroller.scrollAt(nextState.scrollTop)
+        this.scroller.scrollAt(nextState.scrollTop)
       }
   }
 
@@ -131,6 +151,7 @@ class Body extends Component {
         this.state.isScrolling && 'react-datagrid__body--scrolling'
       )
 
+    const columnGroupHeaderClassName = 'react-datagrid__column-group__header'
 
     return <Item
       flex
@@ -139,7 +160,10 @@ class Body extends Component {
       data={null}
       ref="body"
     >
-      <div className="react-datagrid__column-group__header react-datagrid__column-group__header--placeholder" style={{height: this.state.headerHeight, width: '100%'}}/>
+      <div
+        className={`${columnGroupHeaderClassName} ${columnGroupHeaderClassName}--placeholder`}
+        style={{ height: this.state.headerHeight, width: '100%' }}
+      />
       {resizeTool}
       {this.renderScroller()}
     </Item>
@@ -147,11 +171,11 @@ class Body extends Component {
 
   renderScroller() {
     if (!this.props.data) {
-      return
+      return null
     }
 
     return <Scroller
-      ref="scroller"
+      ref={this.scrollerRef}
       contentHeight={this.p.contentHeight}
       headerHeight={this.p.headerHeight}
       onScroll={this.onScroll}
@@ -194,6 +218,7 @@ class Body extends Component {
       header,
       onHeaderCellClick,
       onHeaderSortClick,
+      resizable,
       isMultiSort,
       sortable,
       sortInfo,
@@ -244,9 +269,11 @@ class Body extends Component {
       header,
       onHeaderCellClick,
       onHeaderSortClick,
+      resizable,
       sortable,
       sortInfo,
       isMultiSort,
+      onColumnResize: this.onColumnResize,
       onHeaderHeightChange: this.onHeaderHeightChange,
       isPlaceholderActive: this.state.isPlaceholderActive,
       isScrolling: this.state.isScrolling,
@@ -286,8 +313,18 @@ class Body extends Component {
     }
   }
 
-  onHeaderHeightChange(height) {
+  onColumnResize({ column, size }) {
+    const newState = {
+      columnSizes: assign({}, this.state.columnSizes, {
+        [column.id]: size
+      })
+    }
+    this.setState(newState, () => {
+      this.updateColumns()
+    })
+  }
 
+  onHeaderHeightChange(height) {
     this.setBodyHeight(height)
     this.setState({
       headerHeight: height
@@ -295,6 +332,22 @@ class Body extends Component {
     setTimeout(() => {
       this.setMaxScrollTop()
     }, 0)
+  }
+
+  setBodyHeight(offset) {
+    offset = offset || this.state.headerHeight || 0
+
+    const bodyNode = findDOMNode(this.refs.body)
+    let bodyHeight
+    if (bodyNode) {
+      bodyHeight = bodyNode.offsetHeight - offset
+    } else {
+      bodyHeight = 0
+    }
+
+    this.setState({
+      bodyHeight
+    })
   }
 
   onRowMouseEnter(event, rowProps) {
@@ -317,7 +370,7 @@ class Body extends Component {
   }
 
   onScroll(scrollTop, event) {
-    this.scrollAt(scrollTop)
+    this.scrollAt(scrollTop, event)
 
     if (this.p.onScroll) {
       this.p.onScroll(scrollTop, event)
@@ -353,23 +406,7 @@ class Body extends Component {
     }, 0)
   }
 
-  setBodyHeight(offset) {
-    offset = offset || this.state.headerHeight || 0
-
-    const bodyNode = findDOMNode(this.refs.body)
-    let bodyHeight
-    if (bodyNode) {
-      bodyHeight = bodyNode.offsetHeight - offset
-    } else {
-      bodyHeight = 0
-    }
-
-    this.setState({
-      bodyHeight
-    })
-  }
-
-  setMaxScrollTop(contentHeight, props){
+  setMaxScrollTop(contentHeight, props) {
     props = props || this.props
     const maxScrollTop = (contentHeight || this.props.contentHeight) - this.state.bodyHeight
 
@@ -426,7 +463,7 @@ class Body extends Component {
     return index
   }
 
-  scrollAt(scrollTop) {
+  scrollAt(scrollTop, event) {
     raf(() => {
       this.setState({
         scrollTop
@@ -435,7 +472,7 @@ class Body extends Component {
 
     // trigger scrollbottom
     if (this.p.contentHeight - (this.p.scrollbarWidth + 5) <= scrollTop + this.p.bodyHeight) {
-      this.p.onScrollBottom()
+      this.p.onScrollBottom(event)
     }
 
     return scrollTop
@@ -489,8 +526,22 @@ class Body extends Component {
       normalizedColumns = columns.map(column => <Column {...column} />)
     }
 
+    const columnSizes = this.state.columnSizes
+
     return normalizedColumns
-      .map((c, index) => assign({}, c.props, { index: index + startIndex }))
+      .map((c, index) => {
+        const col = assign({}, c.props, {
+          index: index + startIndex
+        })
+
+        col.id = col.id || col.name || uuid.v4()
+
+        if (columnSizes[col.id] !== undefined) {
+          col.width = columnSizes[col.id]
+        }
+
+        return col
+      })
   }
 
   prepareProps(props){
@@ -534,12 +585,26 @@ class Body extends Component {
   getFlattenColumns() {
     return this.state.flatColumns
   }
+
+  getChildContext() {
+    return {
+      onResizeMouseDown: this.onResizeMouseDown
+    }
+  }
+
+  onResizeMouseDown(headerProps) {
+    console.log('headerProps', headerProps);
+  }
 }
 
+Body.childContextTypes = {
+  onResizeMouseDown: PropTypes.func
+}
 
 Body.defaultProps = {
   rowHeight: 40,
   extraRows: 4,
+  headerHeightChangeDelay: 10,
   defaultScrollTop: 0,
   onRowMouseEnter: () => {},
   onRowMouseLeave: () => {},

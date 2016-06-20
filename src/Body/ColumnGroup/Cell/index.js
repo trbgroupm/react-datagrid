@@ -1,4 +1,5 @@
 import React, { PropTypes } from 'react'
+import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
 
 import assign from 'object-assign'
@@ -11,10 +12,19 @@ import bemFactory from '../../../bemFactory'
 const cellBem = bemFactory('react-datagrid__cell')
 const headerBem = bemFactory('react-datagrid__column-header')
 
-export default class Cell extends Component {
+import RENDER_HEADER from './renderHeader'
 
-  shouldComponentUpdate(nextProps){
-    if (typeof nextProps.shouldComponentUpdate === 'function'){
+export default class Cell extends Component {
+  componentDidMount(){
+    if (this.props.onMount) {
+      this.props.onMount(this.props, this)
+    }
+  }
+
+  shouldComponentUpdate(nextProps) {
+    console.log('nextProps', nextProps);
+    return true
+    if (typeof nextProps.shouldComponentUpdate === 'function') {
       return nextProps.shouldComponentUpdate(nextProps, this.props)
     }
 
@@ -22,16 +32,21 @@ export default class Cell extends Component {
   }
 
   prepareStyle(props) {
+    return props.style
     const style = assign({}, props.style)
 
-    const { minWidth, maxWidth } = props
+    const { minWidth, maxWidth, defaultWidth } = props
     let { width } = props
 
-    if (width && minWidth && width < minWidth){
+    if (width === undefined && defaultWidth !== undefined) {
+      width = defaultWidth
+    }
+
+    if (width && minWidth && width < minWidth) {
       width = minWidth
     }
 
-    if (minWidth != null){
+    if (minWidth != null) {
       style.minWidth = minWidth
     }
 
@@ -69,7 +84,8 @@ export default class Cell extends Component {
       className = join(
         className,
         props.titleClassName,
-        props.sortable && `${baseClassName}--sortable`
+        props.sortable && `${baseClassName}--sortable`,
+        props.resizable && `${baseClassName}--resizable`
       )
     }
 
@@ -116,11 +132,13 @@ export default class Cell extends Component {
     }
 
     if (renderNode === undefined) {
-      renderNode = <Item
-        {...cellProps}
-        title={null}
-        data={null}
-      />
+      renderNode = headerCell ?
+        RENDER_HEADER(cellProps) :
+        <Item
+          {...cellProps}
+          title={null}
+          data={null}
+        />
     }
 
     return renderNode
@@ -130,25 +148,36 @@ export default class Cell extends Component {
     const { props } = this
     const { children } = cellProps
 
-    // if (cellProps.sortable) {
-      const sortTools = this.getSortTools(cellProps.sortInfo ? cellProps.sortInfo.dir : null, cellProps)
+    const sortTools = this.getSortTools(
+      cellProps.sortInfo ?
+        cellProps.sortInfo.dir :
+        null,
+      cellProps
+    )
 
-      cellProps.children = [
-        children,
-        sortTools
-      ]
+    cellProps.children = [
+      children,
+      sortTools
+    ]
 
-      if (cellProps.sortInfo && cellProps.sortInfo.dir) {
-        const dirName = cellProps.sortInfo.dir == 1 ? 'asc' : 'desc'
+    if (cellProps.sortInfo && cellProps.sortInfo.dir) {
+      const dirName = cellProps.sortInfo.dir == 1 ? 'asc' : 'desc'
 
-        cellProps.className = join(
-          cellProps.className,
-          `${props.headerCellDefaultClassName}--sort-${dirName}`
-        )
-      }
-    // }
+      cellProps.className = join(
+        cellProps.className,
+        `${props.headerCellDefaultClassName}--sort-${dirName}`
+      )
+    }
+
+    cellProps.onResizeMouseDown = this.onResizeMouseDown.bind(this, cellProps)
 
     return cellProps
+  }
+
+  onResizeMouseDown(cellProps, event) {
+    if (this.props.onResizeMouseDown) {
+      this.props.onResizeMouseDown(cellProps, findDOMNode(this), event)
+    }
   }
 
   onClick(event) {

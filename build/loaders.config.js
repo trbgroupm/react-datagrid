@@ -10,7 +10,7 @@ module.exports = [
   },
   {
     test: /\.scss$/,
-    exclude: /node_modules/,
+    exclude: /(node_modules|example)/,
     loader: 'style-loader!css-loader!autoprefixer-loader!sass-loader'
   },
   {
