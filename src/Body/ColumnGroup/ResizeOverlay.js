@@ -10,7 +10,7 @@ export default class ResizeOverlay extends Component {
 
     this.state = {
       offset: 0,
-      constrained: true
+      constrained: false
     }
   }
 

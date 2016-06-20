@@ -30,7 +30,6 @@ export default class Cell extends Component {
   }
 
   prepareStyle(props) {
-    return props.style
     const style = assign({}, props.style)
 
     const { minWidth, maxWidth, defaultWidth } = props
