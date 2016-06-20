@@ -15,15 +15,13 @@ const headerBem = bemFactory('react-datagrid__column-header')
 import RENDER_HEADER from './renderHeader'
 
 export default class Cell extends Component {
-  componentDidMount(){
+  componentDidMount() {
     if (this.props.onMount) {
       this.props.onMount(this.props, this)
     }
   }
 
   shouldComponentUpdate(nextProps) {
-    console.log('nextProps', nextProps);
-    return true
     if (typeof nextProps.shouldComponentUpdate === 'function') {
       return nextProps.shouldComponentUpdate(nextProps, this.props)
     }
