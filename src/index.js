@@ -827,7 +827,9 @@ DataGrid.defaultProps = {
   sortable: true,
   resizable: true,
   allowUnsort: true,
-  rowHeight: 40
+  rowHeight: 40,
+  columnMinWidth: 50,
+  columnMaxWidth: null
 }
 
 DataGrid.propTypes = {
@@ -835,7 +837,7 @@ DataGrid.propTypes = {
   loading: PropTypes.bool,
   header: PropTypes.bool,
   defaultLoading : PropTypes.bool,
-  allowUnsrt : PropTypes.bool,
+  allowUnsort: PropTypes.bool,
 
   // row config
   onRowMouseEnter: PropTypes.func,

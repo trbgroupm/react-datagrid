@@ -208,6 +208,8 @@ class Body extends Component {
       cellFactory,
       extraRows,
       onColumnGroupScroll,
+      columnMinWidth,
+      columnMaxWidth,
       activeIndex,
       scrollTop,
       children,
@@ -269,6 +271,8 @@ class Body extends Component {
       header,
       onHeaderCellClick,
       onHeaderSortClick,
+      columnMinWidth,
+      columnMaxWidth,
       resizable,
       sortable,
       sortInfo,
@@ -527,12 +531,20 @@ class Body extends Component {
     }
 
     const columnSizes = this.state.columnSizes
+    const { columnMinWidth, columnMaxWidth } = this.props
 
     return normalizedColumns
       .map((c, index) => {
         const col = assign({}, c.props, {
           index: index + startIndex
         })
+
+        if (col.minWidth == null && columnMinWidth != null) {
+          col.minWidth = columnMinWidth
+        }
+        if (col.maxWidth == null && columnMaxWidth != null) {
+          col.maxWidth = columnMaxWidth
+        }
 
         col.id = col.id || col.name || uuid.v4()
 

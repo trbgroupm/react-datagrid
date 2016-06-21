@@ -68,8 +68,10 @@ const getRemoteDataSource = ({ size, delay }, { sortInfo, skip, limit } = {}) =>
 export default class DataGridExample extends Component {
 
   componentDidMount() {
+    const data = generate(this.state.size)
+
     this.setState({
-      data: generate(this.state.size)
+      data
     })
   }
 
@@ -96,7 +98,7 @@ export default class DataGridExample extends Component {
         {
           name: 'firstName',
           visible: true,
-          defaultWidth: 200
+          xdefaultWidth: 200
         },
         {
           name: 'lastName',
@@ -148,6 +150,7 @@ export default class DataGridExample extends Component {
     const gridProps = {
       idProperty: 'id',
       dataSource: this.state.data,
+      columnMaxWidth: 70,
       defaultSkip: 0,
       limit: 50,
       zebraRows: this.state.zebraRows,

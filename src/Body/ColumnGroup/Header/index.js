@@ -21,7 +21,7 @@ export default class Header extends Component {
   }
 
   prepareStyle(props) {
-    const { width, minWidth } = props
+    const { width, minWidth, maxWidth } = props
     let { style } = props
 
     if (width || minWidth) {
@@ -34,6 +34,10 @@ export default class Header extends Component {
       if (minWidth) {
         style.minWidth = minWidth
       }
+    }
+
+    if (maxWidth != null) {
+      style.maxWidth = maxWidth
     }
 
     return style

@@ -52,7 +52,14 @@ export default class Cell extends Component {
     }
 
     if (width != null) {
-      style.minWidth = style.maxWidth = width
+      if (maxWidth != null && width > maxWidth) {
+        width = maxWidth
+      }
+      if (minWidth != null && width < minWidth) {
+        width = minWidth
+      }
+
+      style.minWidth = style.maxWidth = style.width = width
     }
 
     return style

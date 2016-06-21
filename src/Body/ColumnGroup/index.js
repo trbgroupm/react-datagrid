@@ -4,10 +4,9 @@ import Component from 'react-class'
 import assign from 'object-assign'
 import Region from 'region'
 import join from '../../join'
-import clamp from '../../utils/clamp'
 
 import shallowequal from 'shallowequal'
-import getColumnsWidth from '../../utils/getColumnsWidth'
+import getColumnsInfo from '../../utils/getColumnsInfo'
 
 import InnerWrapper from './InnerWrapper'
 import Header from './Header'
@@ -45,6 +44,7 @@ export default class ColumnGroup extends Component {
       sortable,
       sortInfo,
       resizable,
+      columnMinWidth,
       data,
     } = props
 
@@ -56,7 +56,8 @@ export default class ColumnGroup extends Component {
       style.width = width
     }
 
-    let minWidth = getColumnsWidth(columns)
+    const { minWidth, maxWidth } = getColumnsInfo(columns)
+
 
     // Fixed means that it is not allowed to have horizontal scroll
     if (fixed) {
@@ -85,6 +86,7 @@ export default class ColumnGroup extends Component {
           data={data}
           columns={columns}
           minWidth={minWidth}
+          maxWidth={maxWidth}
           onCellClick={props.onHeaderCellClick}
           onSortClick={props.onHeaderSortClick}
           isMultiSort={isMultiSort}
@@ -104,6 +106,7 @@ export default class ColumnGroup extends Component {
             {...props}
             columns={columns}
             minWidth={minWidth}
+            maxWidth={maxWidth}
             innerWrapperOffset={null}
           />
         </div>
@@ -141,22 +144,13 @@ export default class ColumnGroup extends Component {
 
     const column = columns[index]
     const columnRegion = Region.from(columnHeaderNodes[index])
+    const minWidth = column.minWidth
 
-    const left = (column.minWidth || 10) + columnRegion.left
+    const left = minWidth + columnRegion.left
     constrainTo.set({ left })
 
-    const nextColumn = columns[index + 1]
-
-    if (nextColumn) {
-      const nextColumnRegion = Region.from(columnHeaderNodes[index + 1])
-      const nextColumnMinWidth = nextColumn.minWidth || 10
-      let right = nextColumnRegion.right - nextColumnMinWidth
-
-      if (column.maxWidth) {
-        const maxRight = columnRegion.left + column.maxWidth
-        right = clamp(right, 0, maxRight)
-      }
-
+    if (column.maxWidth) {
+      const right = columnRegion.left + column.maxWidth
       constrainTo.set({ right })
     }
 

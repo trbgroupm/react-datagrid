@@ -12,6 +12,5 @@ export default class Column extends Component {
 }
 
 Column.defaultProps = {
-  isColumn: true, // used to check if element is column
-  minWidth: 40
+  isColumn: true // used to check if element is column
 }

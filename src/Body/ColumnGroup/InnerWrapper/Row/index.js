@@ -1,13 +1,11 @@
 import React, { PropTypes } from 'react'
-import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
-import {Flex} from 'react-flex'
+import { Flex } from 'react-flex'
 import assign from 'object-assign'
 import join from '../../../../join'
 import shallowequal from 'shallowequal'
 
 import Cell from '../../Cell'
-import getColumnsWidth from '../../../../utils/getColumnsWidth'
 
 export default class Row extends Component {
 
@@ -34,6 +32,7 @@ export default class Row extends Component {
       data,
       columns,
       minWidth,
+      maxWidth,
       rowStyle,
       renderRow,
       even,
@@ -76,6 +75,10 @@ export default class Row extends Component {
       height: rowHeight,
       minWidth
     })
+
+    if (maxWidth != null) {
+      style.maxWidth = maxWidth
+    }
 
     if (rowStyle) {
       if (typeof rowStyle === 'function') {

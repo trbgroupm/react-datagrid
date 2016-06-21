@@ -5,98 +5,101 @@ import shallowequal from 'shallowequal'
 
 export default class ColumnGroupInnerWrapper extends Component {
 
-  shouldComponentUpdate(nextProps){
+  shouldComponentUpdate(nextProps) {
     return !shallowequal(nextProps, this.props)
   }
 
-  render(){
-     const props = this.props
-     const {
-       data,
-       from,
-       to,
-       rowHeight,
-       globalProps,
-       onRowMouseEnter,
-       onRowMouseLeave,
-       onRowClick,
-       renderRow,
-       cellFactory,
-       rowStyle,
-       overRowId,
-       // selected can be an object or an index
-       selected,
-       isMultiselect,
-       hasSelection,
-       activeIndex,
-       rowProps: passedProps,
-       zebraRows,
-       bufferValid,
-       isScrolling,
-       isPlaceholderActive,
-       renderRowPlaceholder,
-       columns,
-       minWidth,
-       rowKey
-     } = props
+  render() {
+    const props = this.props
+    const {
+      data,
+      from,
+      to,
+      rowHeight,
+      globalProps,
+      onRowMouseEnter,
+      onRowMouseLeave,
+      onRowClick,
+      renderRow,
+      cellFactory,
+      rowStyle,
+      overRowId,
+      // selected can be an object or an index
+      selected,
+      isMultiselect,
+      hasSelection,
+      activeIndex,
+      rowProps: passedProps,
+      zebraRows,
+      bufferValid,
+      isScrolling,
+      isPlaceholderActive,
+      renderRowPlaceholder,
+      columns,
+      minWidth,
+      maxWidth,
+      rowKey
+    } = props
 
     const rows = data.slice(from, to).map((rowData, index, dataSlice) => {
-       const id = rowData[globalProps.idProperty]
-       const over = overRowId === id
-       const realIndex = index + from
-       const even = !!(realIndex % 2)
-       const active = activeIndex === realIndex
+      const id = rowData[globalProps.idProperty]
+      const over = overRowId === id
+      const realIndex = index + from
+      const even = !!(realIndex % 2)
+      const active = activeIndex === realIndex
 
-       const keyIndex = rowKey === 'realIndex' ? realIndex : index
-       const key = `row-${keyIndex}`
+      const keyIndex = rowKey === 'realIndex' ? realIndex : index
+      const key = `row-${keyIndex}`
 
-       const isSelected = hasSelection &&
-                         (
-                           isMultiselect?
-                             selected.hasOwnProperty(id) : // TODO: use hasOwn, with curry
-                             selected == id // to allow type conversion, so 5 == '5'
-                         )
-
-
+      const isSelected = hasSelection &&
+                       (
+                         isMultiselect ?
+                           selected.hasOwnProperty(id) : // TODO: use hasOwn, with curry
+                           selected == id // to allow type conversion, so 5 == '5'
+                       )
 
       const rowProps = {
-         id,
-         columns,
-         minWidth,
-         active,
-         key,
-         over,
-         renderRow,
-         cellFactory,
-         rowStyle,
-         realIndex, // is used rowSelect, for a correct selection (onClick)
-         rowHeight,
-         passedProps,
-         bufferValid,
-         isScrolling,
-         isPlaceholderActive,
-         renderRowPlaceholder,
-         selected: isSelected, // row uses selected as a bool, a state
-         data: rowData,
-         onMouseEnter: onRowMouseEnter,
-         onMouseLeave: onRowMouseLeave,
-         onClick: onRowClick,
+        id,
+        columns,
+        minWidth,
+        active,
+        key,
+        over,
+        renderRow,
+        cellFactory,
+        rowStyle,
+        realIndex, // is used rowSelect, for a correct selection (onClick)
+        rowHeight,
+        passedProps,
+        bufferValid,
+        isScrolling,
+        isPlaceholderActive,
+        renderRowPlaceholder,
+        selected: isSelected, // row uses selected as a bool, a state
+        data: rowData,
+        onMouseEnter: onRowMouseEnter,
+        onMouseLeave: onRowMouseLeave,
+        onClick: onRowClick,
 
-         even: false,
-         odd: false
-       }
+        even: false,
+        odd: false
+      }
+
+      if (maxWidth != null) {
+        rowProps.maxWidth = maxWidth
+      }
 
       if (zebraRows) {
-       rowProps.even = even
-       rowProps.odd = !even
+        rowProps.even = even
+        rowProps.odd = !even
       }
 
       let row
-      if (props.rowFactory){
+      if (props.rowFactory) {
         row = props.rowFactory(rowProps)
       }
 
-      if (row === undefined){
+      if (row === undefined) {
         row = <Row {...rowProps} />
       }
 
