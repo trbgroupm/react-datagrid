@@ -122,13 +122,11 @@ export default class Row extends Component {
     return row
   }
 
-  renderRow(data, columns){
+  renderRow(data, columns) {
     const lastIndex = columns.length - 1
     return columns.map((column, index) => {
       const columnProps = column
-      const {
-        name
-      } = columnProps
+      const { name } = columnProps
 
       // column.name can be ommited if it has a render method
       // so we also

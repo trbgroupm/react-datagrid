@@ -76,6 +76,7 @@ export default class Header extends Component {
         name,
         title,
         index,
+        absoluteIndex,
         sortable: sortableColumn,
         resizable: resizableColumn
       } = column
@@ -87,9 +88,9 @@ export default class Header extends Component {
 
       if (isSortable) {
         if (isMultiSort) {
-          columnSortInfo = sortInfo.filter(info => info.index === index)[0]
+          columnSortInfo = sortInfo.filter(info => info.absoluteIndex === absoluteIndex)[0]
         } else {
-          columnSortInfo = sortInfo && sortInfo.index === index ?
+          columnSortInfo = sortInfo && sortInfo.absoluteIndex === absoluteIndex ?
             sortInfo :
             null
         }

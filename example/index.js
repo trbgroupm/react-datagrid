@@ -150,7 +150,7 @@ export default class DataGridExample extends Component {
     const gridProps = {
       idProperty: 'id',
       dataSource: this.state.data,
-      columnMaxWidth: 70,
+      columnMinWidth: 470,
       defaultSkip: 0,
       limit: 50,
       zebraRows: this.state.zebraRows,
@@ -198,14 +198,14 @@ export default class DataGridExample extends Component {
     let unlockedColumns = columns.filter(c => !c.locked)
 
     if (lockedColumns.length) {
-      lockedColumns = lockedColumns.map(c => {
-        c.minWidth = 350
-        return c
-      })
-      unlockedColumns = unlockedColumns.map(c => {
-        c.minWidth = 350
-        return c
-      })
+      // lockedColumns = lockedColumns.map(c => {
+      //   c.minWidth = 350
+      //   return c
+      // })
+      // unlockedColumns = unlockedColumns.map(c => {
+      //   c.minWidth = 350
+      //   return c
+      // })
       delete gridProps.columns
       gridProps.children = [
         <ColumnGroup columns={lockedColumns} fixed />

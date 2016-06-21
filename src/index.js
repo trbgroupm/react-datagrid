@@ -259,7 +259,7 @@ class DataGrid extends Component {
   }
 
   onHeaderSortClick(props) {
-    const column = this.getColumn(props.index)
+    const column = this.getColumn(props.absoluteIndex)
 
     this.p.isMultiSort ?
       this.handleMultipleSort(column) :
@@ -279,7 +279,7 @@ class DataGrid extends Component {
     const newSortInfo = this.getNewSortInfoDescription(
         column,
         currentSortInfo &&
-        currentSortInfo.index === column.index &&
+        currentSortInfo.absoluteIndex === column.absoluteIndex &&
         currentSortInfo.dir
       )
 
@@ -300,13 +300,13 @@ class DataGrid extends Component {
         this.getNewSortInfoDescription(column)
       ]
     } else {
-      const sortInfoIndex = getIndexBy(sortInfo, 'index', column.index)
+      const sortInfoIndex = getIndexBy(sortInfo, 'absoluteIndex', column.absoluteIndex)
       const existingColumnSortInfo = sortInfo[sortInfoIndex]
 
       const newColumnSortInfo = this.getNewSortInfoDescription(
         column,
         existingColumnSortInfo ?
-          existingColumnSortInfo.dir:
+          existingColumnSortInfo.dir :
           null
         )
 
@@ -363,7 +363,7 @@ class DataGrid extends Component {
       newSortInfo.type = column.type
     }
 
-    newSortInfo.index = column.index
+    newSortInfo.absoluteIndex = column.absoluteIndex
 
     return newSortInfo
   }

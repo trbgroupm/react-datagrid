@@ -3,6 +3,8 @@ import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
 import uuid from 'uuid'
 
+import Region from 'region'
+
 import assign from 'object-assign'
 import raf from 'raf'
 import { Item } from 'react-flex'
@@ -10,6 +12,9 @@ import shallowequal from 'shallowequal'
 import flatten from 'lodash.flatten'
 import throttle from 'lodash.throttle'
 
+import ResizeOverlay from './ResizeOverlay'
+
+import setupColumnResize from './setupColumnResize'
 import getDataRangeToRender from './getDataRangeToRender'
 
 import join from '../join'
@@ -44,7 +49,9 @@ class Body extends Component {
   constructor(props) {
     super(props)
 
-    this.scrollerRef = (s) => { this.scroller = s }
+    this.refHeaderPlaceholder = (header) => { this.headerPlaceholder = header }
+    this.refResizeOverlay = (r) => { this.resizeOverlay = r }
+    this.refScroller = (s) => { this.scroller = s }
 
     this.onHeaderHeightChange = throttle(
       this.onHeaderHeightChange,
@@ -161,11 +168,16 @@ class Body extends Component {
       ref="body"
     >
       <div
+        ref={this.refHeaderPlaceholder}
         className={`${columnGroupHeaderClassName} ${columnGroupHeaderClassName}--placeholder`}
         style={{ height: this.state.headerHeight, width: '100%' }}
       />
       {resizeTool}
       {this.renderScroller()}
+
+      <ResizeOverlay
+        ref={this.refResizeOverlay}
+      />
     </Item>
   }
 
@@ -175,7 +187,7 @@ class Body extends Component {
     }
 
     return <Scroller
-      ref={this.scrollerRef}
+      ref={this.refScroller}
       contentHeight={this.p.contentHeight}
       headerHeight={this.p.headerHeight}
       onScroll={this.onScroll}
@@ -190,7 +202,7 @@ class Body extends Component {
     </Scroller>
   }
 
-  renderColumnGroups(){
+  renderColumnGroups() {
     const preparedProps = this.p
     const {
       data,
@@ -277,7 +289,7 @@ class Body extends Component {
       sortable,
       sortInfo,
       isMultiSort,
-      onColumnResize: this.onColumnResize,
+      onResizeMouseDown: this.onResizeMouseDown,
       onHeaderHeightChange: this.onHeaderHeightChange,
       isPlaceholderActive: this.state.isPlaceholderActive,
       isScrolling: this.state.isScrolling,
@@ -291,33 +303,46 @@ class Body extends Component {
     }
 
     /**
-     * If no coumnGroup is specified, create a ColumGroup with all passed columns
+     * If no ColumnGroup is specified, create a ColumGroup with all passed columns
      */
     if (!children) {
       return <ColumnGroup
         {...columnGroupProps}
-        columns={columns}
+        columns={columns[0]}
+        index={0}
+        columnStartIndex={0}
         width={'100%'}
       />
     } else {
-    /**
-     * Children are specified, take each Columngroup and insert props
-     */
-      return React.Children.map(children, (child, index) => {
-         return React.cloneElement(
+      /**
+       * Children are specified, take each Columngroup and insert props
+       */
+       let columnStartIndex = 0
+       return React.Children.map(children, (child, index) => {
+         const cols = columns[index]
+         const clonedGroup =  React.cloneElement(
             child,
             assign(
               {},
               columnGroupProps,
               child.props, // let columngroup props overwrite those passed
-              { columns: columns[index] }
+              { columns: cols, columnStartIndex, index }
             )
           )
+        columnStartIndex += cols.length
+
+        return clonedGroup
       })
     }
   }
 
-  onColumnResize({ column, size }) {
+  onColumnResize({ index, size }) {
+    const column = this.getFlattenColumns()[index]
+
+    if (this.props.onColumnResize) {
+      this.props.onColumnResize({ column, size })
+    }
+
     const newState = {
       columnSizes: assign({}, this.state.columnSizes, {
         [column.id]: size
@@ -509,7 +534,9 @@ class Body extends Component {
         return normalizedColumns
       })
     } else {
-      columns = this.normalizeColumns({ columns: props.columns })
+      columns = [
+        this.normalizeColumns({ columns: props.columns })
+      ]
     }
 
     return columns
@@ -534,9 +561,11 @@ class Body extends Component {
     const { columnMinWidth, columnMaxWidth } = this.props
 
     return normalizedColumns
-      .map((c, index) => {
+      .map((c, index, arr) => {
         const col = assign({}, c.props, {
-          index: index + startIndex
+          index,
+          absoluteIndex: index + startIndex,
+          lastInGroup: index == arr.length - 1
         })
 
         if (col.minWidth == null && columnMinWidth != null) {
@@ -556,7 +585,7 @@ class Body extends Component {
       })
   }
 
-  prepareProps(props){
+  prepareProps(props) {
     const isScrollControlled = props.scrollTop != null
     const scrollTop = isScrollControlled?
                   props.scrollTop:
@@ -581,6 +610,85 @@ class Body extends Component {
     })
   }
 
+  onResizeMouseDown({ absoluteIndex, colHeaderNode, event }) {
+    event.preventDefault()
+    event.stopPropagation()
+
+    const region = Region.from(event.currentTarget.firstChild || event.currentTarget)
+    const columns = this.getFlattenColumns()
+
+    const index = absoluteIndex
+
+    const headerRegion = Region.from(findDOMNode(this.headerPlaceholder))
+    const constrainTo = Region.from(headerRegion.get())
+
+    const column = columns[index]
+
+    const columnRegion = Region.from(colHeaderNode)
+    const minWidth = column.minWidth
+
+    const left = minWidth + columnRegion.left
+    constrainTo.set({ left })
+
+    if (column.maxWidth) {
+      const right = columnRegion.left + column.maxWidth
+      constrainTo.set({ right })
+    }
+
+    setupColumnResize({
+      headerRegion,
+      constrainTo,
+      region,
+      columns,
+      index,
+      initialSize: columnRegion.width
+    }, {
+      onResizeDragInit: this.onResizeDragInit,
+      onResizeDrag: this.onResizeDrag,
+      onResizeDrop: this.onResizeDrop
+    }, event)
+  }
+
+  onResizeDragInit({ offset, constrained }) {
+    this.resizeOverlay.setOffset(offset)
+    this.resizeOverlay.setActive(true)
+    this.resizeOverlay.setConstrained(constrained)
+  }
+
+  onResizeDrop({ index, offset, constrained, size }) {
+    this.resizeOverlay.setOffset(offset)
+    this.resizeOverlay.setConstrained(constrained)
+    this.resizeOverlay.setActive(false)
+
+    this.onColumnResize({
+      index,
+      size
+    })
+  }
+
+  onResizeDrag({ offset, constrained }) {
+    this.resizeOverlay.setOffset(offset)
+    this.resizeOverlay.setConstrained(constrained)
+  }
+
+  getColumnGroupIndexByColumnIndex(columnIndex) {
+    const columns = this.getAllColumns()
+    let groupIndex = 0
+    let colLength = 0
+
+    while (columns[groupIndex]) {
+      colLength += columns[groupIndex].length
+
+      if (columnIndex < colLength) {
+        return groupIndex
+      }
+
+      groupIndex++
+    }
+
+    return -1
+  }
+
   // exposed methods
   getScrollTop() {
     return this.state.scrollTop
@@ -602,10 +710,6 @@ class Body extends Component {
     return {
       onResizeMouseDown: this.onResizeMouseDown
     }
-  }
-
-  onResizeMouseDown(headerProps) {
-    console.log('headerProps', headerProps);
   }
 }
 

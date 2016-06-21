@@ -2,7 +2,7 @@ import React from 'react'
 import Component from 'react-class'
 import assign from 'object-assign'
 
-import join from '../../join'
+import join from '../join'
 
 export default class ResizeOverlay extends Component {
   constructor(props) {

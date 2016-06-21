@@ -24,6 +24,28 @@
 .react-datagrid__cell {
   padding: 10px 5px; }
 
+.react-datagrid__column-resizer {
+  width: 10px;
+  right: -5px;
+  padding-left: 3px;
+  padding-right: 3px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none; }
+
+.react-datagrid__column-header__resize-wrapper--last-in-group .react-datagrid__column-resizer {
+  right: -3px; }
+
+.react-datagrid__column-resizer-handle {
+  background: #c2c2c2; }
+
+.react-datagrid__resize-proxy {
+  width: 4px;
+  background: #c2c2c2; }
+  .react-datagrid__resize-proxy--constrained {
+    background: #FFB84F; }
+
 .react-datagrid__column-header {
   padding: 10px 5px;
   border-right: 1px solid #c2c2c2;

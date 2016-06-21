@@ -10,7 +10,9 @@ export default function ({
 
     columnHeaderNodes,
     columns,
-    index
+    index,
+
+    initialSize
   }, {
     onResizeDragInit = emptyFn,
     onResizeDragStart = emptyFn,
@@ -70,7 +72,7 @@ export default function ({
 
       const constrained = isContrained(config)
 
-      const size = Region.from(columnHeaderNodes[index]).width +
+      const size = initialSize +
         diff -
         (region.width / 2) // exclude the width of the drag handle
 

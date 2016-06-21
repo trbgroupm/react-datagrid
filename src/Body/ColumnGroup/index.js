@@ -2,7 +2,6 @@ import React, { PropTypes } from 'react'
 import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
 import assign from 'object-assign'
-import Region from 'region'
 import join from '../../join'
 
 import shallowequal from 'shallowequal'
@@ -10,16 +9,12 @@ import getColumnsInfo from '../../utils/getColumnsInfo'
 
 import InnerWrapper from './InnerWrapper'
 import Header from './Header'
-import ResizeOverlay from './ResizeOverlay'
-
-import setupColumnResize from './setupColumnResize'
 
 export default class ColumnGroup extends Component {
 
   constructor(props) {
     super(props)
 
-    this.refResizeOverlay = (r) => { this.resizeOverlay = r }
     this.refHeader = (h) => { this.header = h }
   }
 
@@ -111,11 +106,18 @@ export default class ColumnGroup extends Component {
           />
         </div>
       </div>
-
-      <ResizeOverlay
-        ref={this.refResizeOverlay}
-      />
     </div>
+  }
+
+  onResizeMouseDown(headerProps, colHeaderNode, event) {
+    if (this.props.onResizeMouseDown) {
+      this.props.onResizeMouseDown({
+        absoluteIndex: headerProps.absoluteIndex,
+        colHeaderNode,
+        headerNode: findDOMNode(this.header),
+        event
+      })
+    }
   }
 
   onResize({ height }) {
@@ -128,77 +130,10 @@ export default class ColumnGroup extends Component {
     ev.stopPropagation()
     this.props.onScroll(ev)
   }
-
-  onResizeMouseDown(headerProps, colHeaderNode, event) {
-    event.preventDefault()
-    event.stopPropagation()
-
-    const region = Region.from(event.currentTarget.firstChild || event.currentTarget)
-
-    const columnHeaderNodes = this.header.getCellDOMNodes()
-    const { columns } = this.props
-    const index = headerProps.index
-
-    const headerRegion = Region.from(findDOMNode(this.header))
-    const constrainTo = Region.from(headerRegion.get())
-
-    const column = columns[index]
-    const columnRegion = Region.from(columnHeaderNodes[index])
-    const minWidth = column.minWidth
-
-    const left = minWidth + columnRegion.left
-    constrainTo.set({ left })
-
-    if (column.maxWidth) {
-      const right = columnRegion.left + column.maxWidth
-      constrainTo.set({ right })
-    }
-
-    setupColumnResize({
-      headerRegion,
-      constrainTo,
-      region,
-      columnHeaderNodes,
-      columns,
-      index
-    }, {
-      onResizeDragInit: this.onResizeDragInit,
-      onResizeDrag: this.onResizeDrag,
-      onResizeDrop: this.onResizeDrop
-    }, event)
-  }
-
-  onResizeDragInit({ offset, constrained }) {
-    this.resizeOverlay.setOffset(offset)
-    this.resizeOverlay.setActive(true)
-    this.resizeOverlay.setConstrained(constrained)
-  }
-
-  onResizeDrop({ index, offset, constrained, size }) {
-    this.resizeOverlay.setOffset(offset)
-    this.resizeOverlay.setConstrained(constrained)
-    this.resizeOverlay.setActive(false)
-
-    this.onColumnResize({
-      index,
-      size
-    })
-  }
-
-  onResizeDrag({ offset, constrained }) {
-    this.resizeOverlay.setOffset(offset)
-    this.resizeOverlay.setConstrained(constrained)
-  }
-
-  onColumnResize({ index, size }) {
-    const column = this.props.columns[index]
-    this.props.onColumnResize({ column, size })
-  }
 }
 
 ColumnGroup.defaultProps = {
-  isColumnGroup: true,
-  onColumnResize: () => {}
+  isColumnGroup: true
 }
 
 ColumnGroup.propTypes = {

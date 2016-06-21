@@ -21,6 +21,9 @@
   padding-right: ($COLUMN_HEADER_RESIZER_WIDTH - $COLUMN_HEADER_RESIZER_VISIBLE_WIDTH) / 2;
   user-select: none;
 }
+.react-datagrid__column-header__resize-wrapper--last-in-group .react-datagrid__column-resizer {
+  right: - ($COLUMN_HEADER_RESIZER_WIDTH - $COLUMN_HEADER_RESIZER_VISIBLE_WIDTH) / 2;
+}
 .react-datagrid__column-resizer-handle {
   background: $HEADER_BORDER_COLOR;
 }

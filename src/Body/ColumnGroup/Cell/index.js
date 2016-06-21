@@ -89,7 +89,8 @@ export default class Cell extends Component {
         className,
         props.titleClassName,
         props.sortable && `${baseClassName}--sortable`,
-        props.resizable && `${baseClassName}--resizable`
+        props.resizable && `${baseClassName}--resizable`,
+        props.lastInGroup && `${baseClassName}--last-in-group`
       )
     }
 
