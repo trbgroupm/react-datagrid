@@ -144,7 +144,8 @@
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
-  position: relative; }
+  position: relative;
+  overflow: hidden; }
 
 .react-datagrid__body--scrolling .react-datagrid__row {
   pointer-events: none; }
@@ -153,11 +154,13 @@
 .react-datagrid__column-group {
   overflow-y: hidden;
   position: relative; }
+  .react-datagrid__column-group--fixed {
+    overflow: hidden; }
 
 .react-datagrid__column-group__header {
   position: relative;
   z-index: 1;
-  overflow: hidden; }
+  overflow: visible; }
   .react-datagrid__column-group__header--placeholder {
     position: absolute; }
 

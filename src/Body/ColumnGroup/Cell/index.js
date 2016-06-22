@@ -119,7 +119,8 @@ export default class Cell extends Component {
       className,
       children: value,
       style,
-      onClick: this.onClick
+      onClick: this.onClick,
+      onMouseUp: this.onMouseUp
     })
 
     // TODO:
@@ -179,7 +180,15 @@ export default class Cell extends Component {
     }
   }
 
+  onMouseUp(event) {
+    event.stopPropagation()
+    event.preventDefault()
+    console.log('mouse up' );
+  }
+
   onClick(event) {
+
+    console.log('click');
     if (this.props.onClick) {
       this.props.onClick(event, this.props)
     }

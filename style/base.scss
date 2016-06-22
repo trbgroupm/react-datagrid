@@ -30,6 +30,7 @@
 .react-datagrid__body {
   display: flex;
   position: relative;
+  overflow: hidden;
 }
 
 .react-datagrid__body--loading {}
@@ -45,12 +46,16 @@
 .react-datagrid__column-group {
   overflow-y: hidden;
   position: relative;
+
+  &--fixed {
+    overflow: hidden;
+  }
 }
 
 .react-datagrid__column-group__header {
   position: relative;
   z-index: 1;
-  overflow: hidden;
+  overflow: visible;
 
   &--placeholder {
     position: absolute;

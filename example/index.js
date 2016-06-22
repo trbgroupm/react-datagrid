@@ -96,6 +96,7 @@ export default class DataGridExample extends Component {
       data: [],
       navigation: true,
       zebraRows: true,
+      resizable: true,
       showHorizontalCellBorder: true,
       showVerticalCellBorder: true,
       remoteDataSource: false,
@@ -150,6 +151,7 @@ export default class DataGridExample extends Component {
       'showHorizontalCellBorder',
       'showVerticalCellBorder',
       'zebraRows',
+      'resizable',
       'remoteDataSource',
       'multiSort',
       'singleSort',
@@ -171,9 +173,11 @@ export default class DataGridExample extends Component {
       idProperty: 'id',
       dataSource: this.state.data,
       // columnMinWidth: 270,
-      // columnDefaultWidth: 300,
+      columnDefaultWidth: 300,
+      useTranslateScrolling: true,
       defaultSkip: 0,
       limit: 50,
+      resizable: this.state.resizable,
       onColumnResize: ({ column, size}) => {
         console.log(column, size)
       },

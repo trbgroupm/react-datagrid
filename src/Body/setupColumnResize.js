@@ -1,4 +1,3 @@
-import Region from 'region'
 import DragHelper from 'drag-helper'
 
 const emptyFn = () => {}
@@ -40,6 +39,7 @@ export default function ({
     region,
     onDragInit: onResizeDragInit.bind(this, {
       offset: initialLeft,
+      region,
       initialLeft
     }),
     onDragStart(e, config) {
@@ -50,6 +50,7 @@ export default function ({
         offset: initialLeft,
         constrained,
         resizing: true,
+        region,
         column
       })
     },
@@ -57,7 +58,6 @@ export default function ({
     onDrag(e, config) {
       const diff = config.diff.left
       const offset = initialLeft + diff
-
       const constrained = isContrained(config)
 
       onResizeDrag({
@@ -65,6 +65,7 @@ export default function ({
         initialLeft,
         diff,
         offset,
+        region,
         column
       })
     },
@@ -72,71 +73,19 @@ export default function ({
     onDrop(e, config) {
       const diff = config.diff.left
       const offset = initialLeft + diff
-
       const constrained = isContrained(config)
-
-      const size = initialSize +
-        diff -
-        (region.width / 2) // exclude the width of the drag handle
+      const size = initialSize + diff
 
       onResizeDrop({
         index,
         constrained,
         initialLeft,
+        region,
         diff,
         offset,
         size,
         column
       })
-      return
-      const nextColumn = diff > 0 ?
-        null :
-        columns[index + 1]
-
-      const columnSize = Region.from(columnHeaderNodes[index]).width
-      let nextColumnSize
-      const firstSize = columnSize + diff
-      let secondSize = 0
-
-      // if (firstSize < column.minWidth){
-      //     firstSize = column.minWidth
-      //     diff = firstSize - columnSize
-      // }
-
-      if (nextColumn) {
-        nextColumnSize = nextColumn ?
-          Region.from(columnHeaderNodes[index + 1]).width
-          :
-          0
-
-        secondSize = nextColumnSize - diff
-      }
-
-      // if (nextColumn && secondSize < nextColumn.minWidth){
-      //     secondSize = nextColumn.minWidth
-      //     diff = nextColumnSize - secondSize
-      //     firstSize = columnSize + diff
-      // }
-
-      const resizeInfo = [{
-        name: column.name,
-        size: firstSize,
-        diff
-      }]
-
-      if (nextColumn) {
-        resizeInfo.push({
-          name: nextColumn.name,
-          size: secondSize,
-          diff: -diff
-        })
-      }
-
-      header.onResizeDrop({
-        resizing: false,
-        resizeColumn: null,
-        resizeProxyLeft: null
-      }, resizeInfo, e)
     }
   })
 }

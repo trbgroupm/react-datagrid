@@ -41,13 +41,17 @@ export default class ColumnGroup extends Component {
       sortInfo,
       resizable,
       columnMinWidth,
+      index,
       data
     } = props
 
     let flex = props.flex
 
     const style = assign({}, props.style, {
-     // height: viewportHeight,
+      // height: viewportHeight,
+
+      // because otherwise, on mac, the scrollbar is sometimes not displayed properly
+      zIndex: 1
     })
 
     if (width !== undefined) {
@@ -64,11 +68,16 @@ export default class ColumnGroup extends Component {
 
     const className = join(
         'react-datagrid__column-group',
+        fixed && 'react-datagrid__column-group--fixed',
         props.className
       )
 
-    const innerWrapperStyle = {
-      transform: `translate3d(0,${innerWrapperOffset}px, 0)`
+    const innerWrapperStyle = {}
+
+    if (props.useTranslateScrolling) {
+      innerWrapperStyle.transform = `translate3d(0,${innerWrapperOffset}px, 0)`
+    } else {
+      innerWrapperStyle.top = innerWrapperOffset
     }
 
     return <Item
@@ -82,6 +91,7 @@ export default class ColumnGroup extends Component {
       {
         header && <Header
           ref={this.refHeader}
+          index={index}
           data={data}
           columns={columns}
           minWidth={minWidth}

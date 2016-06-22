@@ -237,6 +237,7 @@ class Body extends Component {
       rowHeight,
       contentHeight,
       renderRow,
+      useTranslateScrolling,
       rowStyle,
       rowProps,
       selected,
@@ -306,6 +307,7 @@ class Body extends Component {
       zebraRows,
       bufferValid,
       renderRowPlaceholder,
+      useTranslateScrolling,
       rowKey,
       header,
       onHeaderCellClick,
@@ -380,14 +382,18 @@ class Body extends Component {
     })
   }
 
-  onHeaderHeightChange(height) {
-    this.setBodyHeight(height)
-    this.setState({
-      headerHeight: height
-    })
+  onResize() {
+    this.setBodyHeight()
+
     setTimeout(() => {
       this.setMaxScrollTop()
     }, 0)
+  }
+
+  onHeaderHeightChange(height) {
+    this.setState({
+      headerHeight: height
+    }, () => this.onResize())
   }
 
   setBodyHeight(offset) {
@@ -453,13 +459,6 @@ class Body extends Component {
         }, this.props.rowPlaceholderDelay)
       }
     }
-  }
-
-  onResize() {
-    this.setBodyHeight()
-    setTimeout(() => {
-      this.setMaxScrollTop()
-    }, 0)
   }
 
   setMaxScrollTop(contentHeight, props) {
@@ -790,7 +789,8 @@ Body.defaultProps = {
   onScrollBottom: () => {},
   onColumnGroupScroll: () => {},
   zebraRows: true,
-  rowPlaceholderDelay: 300
+  rowPlaceholderDelay: 300,
+  useTranslateScrolling: true
 }
 
 Body.propTypes = {
