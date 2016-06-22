@@ -119,6 +119,7 @@ export default class Header extends Component {
         onClick={this.props.onCellClick}
         onSortClick={this.props.onSortClick}
         onResizeMouseDown={this.props.onResizeMouseDown}
+        onMouseDown={this.props.onMouseDown}
         sortable={isSortable}
         sortInfo={columnSortInfo}
         resizable={isResizable}

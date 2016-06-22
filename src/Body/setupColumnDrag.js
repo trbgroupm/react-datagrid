@@ -25,12 +25,14 @@ function buildIndexes(direction, index, dragIndex) {
   return result
 }
 
-export default function(header, props, event) {
-
+export default ({
+  headerNode,
+  index
+}, event) => {
   event.preventDefault()
 
-  const headerNode = header.getDOMNode()
   const headerRegion = Region.from(headerNode)
+
   var dragColumn = column
   var dragColumnIndex
   var columnData

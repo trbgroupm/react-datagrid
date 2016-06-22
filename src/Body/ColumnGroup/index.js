@@ -103,6 +103,7 @@ export default class ColumnGroup extends Component {
           sortInfo={sortInfo}
           resizable={resizable}
           onResize={this.onResize}
+          onMouseDown={this.props.onHeaderCellMouseDown}
           onResizeMouseDown={this.onResizeMouseDown}
         />
       }

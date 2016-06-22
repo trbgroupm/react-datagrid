@@ -320,6 +320,7 @@ class Body extends Component {
       isMultiSort,
       onResizeMouseDown: this.onResizeMouseDown,
       onHeaderHeightChange: this.onHeaderHeightChange,
+      onHeaderCellMouseDown: this.onHeaderCellMouseDown,
       isPlaceholderActive: this.state.isPlaceholderActive,
       isScrolling: this.state.isScrolling,
       viewportHeight: bodyHeight,
@@ -394,6 +395,14 @@ class Body extends Component {
     this.setState({
       headerHeight: height
     }, () => this.onResize())
+  }
+
+  onHeaderCellMouseDown(headerProps, event) {
+      setupColumnDrag({
+        headerNode: findDOMNode(this.header),
+        headerCellNodes: this.header.getCellDOMNodes(),
+        index: headerProps.index
+      }, event)
   }
 
   setBodyHeight(offset) {

@@ -120,7 +120,7 @@ export default class Cell extends Component {
       children: value,
       style,
       onClick: this.onClick,
-      onMouseUp: this.onMouseUp
+      onMouseDown: this.props.onMouseDown && this.onMouseDown
     })
 
     // TODO:
@@ -174,21 +174,17 @@ export default class Cell extends Component {
     return cellProps
   }
 
+  onMouseDown(event) {
+    this.props.onMouseDown(this.props, event)
+  }
+
   onResizeMouseDown(cellProps, event) {
     if (this.props.onResizeMouseDown) {
       this.props.onResizeMouseDown(cellProps, findDOMNode(this), event)
     }
   }
 
-  onMouseUp(event) {
-    event.stopPropagation()
-    event.preventDefault()
-    console.log('mouse up' );
-  }
-
   onClick(event) {
-
-    console.log('click');
     if (this.props.onClick) {
       this.props.onClick(event, this.props)
     }
