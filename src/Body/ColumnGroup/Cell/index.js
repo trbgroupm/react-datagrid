@@ -130,23 +130,17 @@ export default class Cell extends Component {
       cellProps = this.prepareHeaderCellProps(cellProps)
     }
 
-    let renderNode
-
     if (renderCell && !headerCell) {
-      renderNode = renderCell({ value, data, cellProps })
+      cellProps.children = renderCell({ value, data, cellProps })
     }
 
-    if (renderNode === undefined) {
-      renderNode = headerCell ?
+    return headerCell ?
         RENDER_HEADER(cellProps) :
         <Item
           {...cellProps}
           title={null}
           data={null}
         />
-    }
-
-    return renderNode
   }
 
   prepareHeaderCellProps(cellProps) {

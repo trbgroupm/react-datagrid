@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react'
 import { findDOMNode } from 'react-dom'
 import Component from 'react-class'
 import assign from 'object-assign'
+import { Item } from 'react-flex'
 import join from '../../join'
 
 import shallowequal from 'shallowequal'
@@ -40,8 +41,10 @@ export default class ColumnGroup extends Component {
       sortInfo,
       resizable,
       columnMinWidth,
-      data,
+      data
     } = props
+
+    let flex = props.flex
 
     const style = assign({}, props.style, {
      // height: viewportHeight,
@@ -53,10 +56,10 @@ export default class ColumnGroup extends Component {
 
     const { minWidth, maxWidth } = getColumnsInfo(columns)
 
-
     // Fixed means that it is not allowed to have horizontal scroll
     if (fixed) {
       style.minWidth = minWidth
+      flex = false
     }
 
     const className = join(
@@ -68,8 +71,9 @@ export default class ColumnGroup extends Component {
       transform: `translate3d(0,${innerWrapperOffset}px, 0)`
     }
 
-    return <div
+    return <Item
       {...props}
+      flex={flex}
       className={className}
       style={style}
       data={null}
@@ -106,7 +110,7 @@ export default class ColumnGroup extends Component {
           />
         </div>
       </div>
-    </div>
+    </Item>
   }
 
   onResizeMouseDown(headerProps, colHeaderNode, event) {
@@ -133,7 +137,8 @@ export default class ColumnGroup extends Component {
 }
 
 ColumnGroup.defaultProps = {
-  isColumnGroup: true
+  isColumnGroup: true,
+  flex: 1
 }
 
 ColumnGroup.propTypes = {

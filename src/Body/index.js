@@ -9,7 +9,6 @@ import assign from 'object-assign'
 import raf from 'raf'
 import { Item } from 'react-flex'
 import shallowequal from 'shallowequal'
-import flatten from 'lodash.flatten'
 import throttle from 'lodash.throttle'
 
 import ResizeOverlay from './ResizeOverlay'
@@ -22,9 +21,16 @@ import join from '../join'
 import getIndexBy from '../utils/getIndexBy'
 
 import Column from '../Column'
-import EmptyText from './EmptyText'
+// import EmptyText from './EmptyText'
 import Scroller from './Scroller'
 import ColumnGroup from './ColumnGroup'
+
+const isColumnGroup = c => c && c.props && c.props.isColumnGroup
+const isColumn = c => c && c.props && c.props.isColumn
+
+const flatten = (arrayWithArrays) => {
+  return [].concat(...arrayWithArrays)
+}
 
 /**
  *   Body is a statefull component, it keeps track of:
@@ -64,12 +70,16 @@ class Body extends Component {
     this.state = {
       columnSizes: {}
     }
-    const columns = this.getNewColumns(props)
+
+    const { columns, columnGroupsChildren, columnsChildren } = this.getColumnInfo(props)
     const flatColumns = flatten(columns)
 
     assign(this.state, {
       columns,
       flatColumns,
+      columnGroupsChildren,
+      columnsChildren,
+
       bodyHeight: 0,
       scrollTop: props.defaultScrollTop,
       overRowId: null,
@@ -113,15 +123,32 @@ class Body extends Component {
     props = props || this.props
     // we have to determine if any of the folowing has changed
     // - columns
-    // - columngrups has changed children or column prop
-    const newColumns = this.getNewColumns(props)
-    if (!shallowequal(newColumns, this.state.columns)) {
-      const columns = this.getNewColumns(props)
-      const flatColumns = flatten(columns)
+    // - columngroups has changed children or columns prop
+    const {
+      columns: newColumns,
+      columnsChildren: newColumnsChildren,
+      columnGroupsChildren: newColumnGroupsChildren
+    } = this.getColumnInfo(props)
 
+    const {
+      columns: oldColumns,
+      columnsChildren: oldColumnsChildren,
+      columnGroupsChildren: oldColumnGroupsChildren
+    } = this.state
+
+    const equal = newColumnsChildren == oldColumnsChildren &&
+      newColumnGroupsChildren == oldColumnGroupsChildren &&
+      newColumns.length == oldColumns.length &&
+      newColumns.reduce((eq, col, index) => {
+        return eq && shallowequal(col, oldColumns[index])
+      }, true)
+
+    if (!equal) {
       this.setState({
-        columns,
-        flatColumns
+        columnsChildren: newColumnsChildren,
+        columnGroupsChildren: newColumnGroupsChildren,
+        columns: newColumns,
+        flatColumns: flatten(newColumns)
       })
     }
   }
@@ -305,7 +332,7 @@ class Body extends Component {
     /**
      * If no ColumnGroup is specified, create a ColumGroup with all passed columns
      */
-    if (!children) {
+    if (!children || !this.state.columnGroupsChildren) {
       return <ColumnGroup
         {...columnGroupProps}
         columns={columns[0]}
@@ -320,7 +347,7 @@ class Body extends Component {
        let columnStartIndex = 0
        return React.Children.map(children, (child, index) => {
          const cols = columns[index]
-         const clonedGroup =  React.cloneElement(
+         const clonedGroup = React.cloneElement(
             child,
             assign(
               {},
@@ -515,31 +542,58 @@ class Body extends Component {
     return this.scrollToIndex(index, config)
   }
 
-
   // set columns depending
   // - there are ColumnGrups with jsx
   // - Columgroups have a prop columns
   // - Columgroups have children
-  getNewColumns(props) {
+  getColumnInfo(props) {
     props = props || this.props
-    const columnGroups = props.children
-    let columns
 
-    // we have children (ColumnGroups)
-    if (columnGroups) {
+    const children = props.children ?
+      React.Children.toArray(props.children) :
+      []
+
+    if (!children.length) {
+      const columns = [
+        this.normalizeColumns({
+          columns: props.columns
+        })
+      ]
+
+      return {
+        columns,
+        children: false
+      }
+    }
+
+    const columnGroupsChildren = children.filter(isColumnGroup)
+
+    if (columnGroupsChildren.length) {
+      // we have children (ColumnGroups)
       let startIndex = 0
-      columns = React.Children.toArray(columnGroups).map((columnGroup) => {
+      const columns = columnGroupsChildren.map((columnGroup) => {
         const normalizedColumns = this.normalizeColumns(columnGroup.props, startIndex)
         startIndex += normalizedColumns.length
         return normalizedColumns
       })
-    } else {
-      columns = [
-        this.normalizeColumns({ columns: props.columns })
-      ]
+
+      return {
+        columns,
+        columnGroupsChildren: true
+      }
     }
 
-    return columns
+    // we probably have columns children
+    const columns = [
+      this.normalizeColumns({
+        columns: children.filter(isColumn).map(c => c.props)
+      })
+    ]
+
+    return {
+      columns,
+      columnsChildren: true
+    }
   }
 
   normalizeColumns({ children, columns }, startIndex = 0) {
@@ -558,7 +612,7 @@ class Body extends Component {
     }
 
     const columnSizes = this.state.columnSizes
-    const { columnMinWidth, columnMaxWidth } = this.props
+    const { columnMinWidth, columnMaxWidth, columnDefaultWidth, columnWidth } = this.props
 
     return normalizedColumns
       .map((c, index, arr) => {
@@ -568,6 +622,12 @@ class Body extends Component {
           lastInGroup: index == arr.length - 1
         })
 
+        if (col.defaultWidth == null && columnDefaultWidth != null) {
+          col.defaultWidth = columnDefaultWidth
+        }
+        if (col.width == null && columnWidth != null) {
+          col.width = columnWidth
+        }
         if (col.minWidth == null && columnMinWidth != null) {
           col.minWidth = columnMinWidth
         }
@@ -577,7 +637,7 @@ class Body extends Component {
 
         col.id = col.id || col.name || uuid.v4()
 
-        if (columnSizes[col.id] !== undefined) {
+        if (col.width === undefined && columnSizes[col.id] !== undefined) {
           col.width = columnSizes[col.id]
         }
 
@@ -627,7 +687,9 @@ class Body extends Component {
     const columnRegion = Region.from(colHeaderNode)
     const minWidth = column.minWidth
 
-    const left = minWidth + columnRegion.left
+    const extraOffset = (column.lastInGroup ? region.width : (region.width / 2))
+
+    const left = minWidth + columnRegion.left - extraOffset
     constrainTo.set({ left })
 
     if (column.maxWidth) {
@@ -641,6 +703,7 @@ class Body extends Component {
       region,
       columns,
       index,
+      extraOffset: 0,
       initialSize: columnRegion.width
     }, {
       onResizeDragInit: this.onResizeDragInit,

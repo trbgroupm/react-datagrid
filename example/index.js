@@ -1,7 +1,7 @@
 import React from 'react'
 import Component from 'react-class'
 
-import DataGrid, { ColumnGroup } from '../src'
+import DataGrid, { ColumnGroup, Column } from '../src'
 import '../style/index.scss'
 
 import assign from 'object-assign'
@@ -80,6 +80,17 @@ export default class DataGridExample extends Component {
 
     const size = 5000
 
+    const money = function(value) {
+      if (!value) {
+        return <span>0 kč</span>
+      }
+      if (value.value >= 10) {
+        return <span>{Math.round(value.value)} kč</span>
+      } else {
+        return <span>{(value.value || 0)} kč</span>
+      }
+    }
+
     this.state = {
       size,
       data: [],
@@ -97,8 +108,7 @@ export default class DataGridExample extends Component {
       columns: [
         {
           name: 'firstName',
-          visible: true,
-          xdefaultWidth: 200
+          visible: true
         },
         {
           name: 'lastName',
@@ -108,12 +118,22 @@ export default class DataGridExample extends Component {
           name: 'email',
           visible: true
         },
+        // {
+        //   name: 'grade',
+        //   type: 'number',
+        //   visible: true
+        // },
         {
           name: 'grade',
+          title: 'Cena',
+          visible: true,
+          width: 90,
+          textAlign: 'right',
+          render: money,
           type: 'number',
-          visible: true
         },
         {
+          title: 'aaa',
           name: 'index',
           type: 'number',
           visible: true
@@ -150,9 +170,13 @@ export default class DataGridExample extends Component {
     const gridProps = {
       idProperty: 'id',
       dataSource: this.state.data,
-      columnMinWidth: 470,
+      // columnMinWidth: 270,
+      // columnDefaultWidth: 300,
       defaultSkip: 0,
       limit: 50,
+      onColumnResize: ({ column, size}) => {
+        console.log(column, size)
+      },
       zebraRows: this.state.zebraRows,
       livePagination: this.state.remoteDataSource ? this.state.livePagination : false,
       showCellBorders: this.state.showHorizontalCellBorder && this.state.showVerticalCellBorder?

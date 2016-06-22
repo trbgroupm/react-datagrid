@@ -12,7 +12,8 @@ export default function ({
     columns,
     index,
 
-    initialSize
+    initialSize,
+    extraOffset
   }, {
     onResizeDragInit = emptyFn,
     onResizeDragStart = emptyFn,
@@ -48,7 +49,8 @@ export default function ({
         initialLeft,
         offset: initialLeft,
         constrained,
-        resizing: true
+        resizing: true,
+        column
       })
     },
 
@@ -62,7 +64,8 @@ export default function ({
         constrained,
         initialLeft,
         diff,
-        offset
+        offset,
+        column
       })
     },
 
@@ -82,7 +85,8 @@ export default function ({
         initialLeft,
         diff,
         offset,
-        size
+        size,
+        column
       })
       return
       const nextColumn = diff > 0 ?

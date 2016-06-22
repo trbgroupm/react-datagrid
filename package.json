@@ -1,6 +1,6 @@
 {
   "name": "react-datagrid",
-  "version": "3.0.17-beta",
+  "version": "3.0.19-beta",
   "description": "React DataGrid",
   "main": "lib/index.js",
   "scripts": {
@@ -72,7 +72,6 @@
     "drag-helper": "^1.2.3",
     "hasown": "1.0.1",
     "lodash.debounce": "^4.0.3",
-    "lodash.flatten": "^4.1.0",
     "lodash.throttle": "^4.0.1",
     "object-assign": "^4.1.0",
     "raf": "3.2.0",
