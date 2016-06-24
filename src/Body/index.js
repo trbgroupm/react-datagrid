@@ -13,6 +13,7 @@ import throttle from 'lodash.throttle'
 
 import ResizeOverlay from './ResizeOverlay'
 
+import setupColumnDrag from './setupColumnDrag'
 import setupColumnResize from './setupColumnResize'
 import getDataRangeToRender from './getDataRangeToRender'
 
@@ -23,10 +24,12 @@ import getIndexBy from '../utils/getIndexBy'
 import Column from '../Column'
 // import EmptyText from './EmptyText'
 import Scroller from './Scroller'
-import ColumnGroup from './ColumnGroup'
+import ColumnGroup, { renderHeader } from './ColumnGroup'
 
 const isColumnGroup = c => c && c.props && c.props.isColumnGroup
 const isColumn = c => c && c.props && c.props.isColumn
+
+const emptyObject = Object.freeze ? Object.freeze({}): {}
 
 const flatten = (arrayWithArrays) => {
   return [].concat(...arrayWithArrays)
@@ -58,6 +61,7 @@ class Body extends Component {
     this.refHeaderPlaceholder = (header) => { this.headerPlaceholder = header }
     this.refResizeOverlay = (r) => { this.resizeOverlay = r }
     this.refScroller = (s) => { this.scroller = s }
+    this.refReorderPlaceholder = (p) => { this.reorderPlaceholder = p }
 
     this.onHeaderHeightChange = throttle(
       this.onHeaderHeightChange,
@@ -201,6 +205,7 @@ class Body extends Component {
       />
       {resizeTool}
       {this.renderScroller()}
+      {this.renderReorderPlaceholder()}
 
       <ResizeOverlay
         ref={this.refResizeOverlay}
@@ -208,13 +213,150 @@ class Body extends Component {
     </Item>
   }
 
-  renderScroller() {
+  onPlaceholderColumnGroupMount(cg) {
+    const header = cg.header
+    const index = header.props.index
+
+    const expectedIndex = this.getColumnGroupIndexByColumnIndex(this.state.columnDragIndex)
+
+    this.placeholderHeaders = this.placeholderHeaders || []
+    this.placeholderHeaders[index] = header
+
+    if (expectedIndex === index) {
+      this.setupColumnDrag({
+        header,
+        dragAbsoluteIndex: this.state.columnDragIndex,
+      })
+    }
+  }
+
+  setupColumnDrag({ header, dragAbsoluteIndex }) {
+    const constrainTo = findDOMNode(header)
+    const cells = this.dragCells = header.getCells()
+
+    let draggingCell
+    let dragIndex
+
+    this.reorderCellRanges = cells.map(c => {
+      if (c.props.absoluteIndex === dragAbsoluteIndex) {
+        dragIndex = c.props.index
+        draggingCell = c
+      }
+      const reg = Region.from(findDOMNode(c))
+
+      return [reg.left, reg.right]
+    })
+
+    this.dragIndex = dragIndex
+    this.draggingCell = draggingCell
+
+    const region = this.dragInitialRegion = Region.from(findDOMNode(draggingCell))
+    this.dragRegion = Region.from(region.get())
+    // this.dragRange = [this.dragRegion.left, this.dragRegion.right]
+
+    setupColumnDrag({
+      constrainTo,
+      region: Region.from(region.get())
+    }, {
+      onDrag: this.onHeaderCellDrag,
+      onDrop: this.onHeaderCellDrop
+    }, event)
+  }
+
+  onHeaderCellDrop() {
+    if (this.draggingCell) {
+      this.draggingCell.setLeft(0)
+      this.draggingCell.setDragging(false)
+    }
+    this.setState({
+      columnDrag: false,
+      columnDragIndex: -1
+    })
+  }
+
+  onHeaderCellDrag(diff, event) {
+    if (this.draggingCell) {
+      this.draggingCell.setDragging(true)
+      this.draggingCell.setLeft(diff)
+
+      const cells = this.dragCells
+
+      const region = this.dragRegion
+      const initialRegion = this.dragInitialRegion
+
+      region.set({ left: initialRegion.left, right: initialRegion.right })
+      region.shift({ left: diff })
+
+      const dragIndex = this.dragIndex
+      const dragRange = [ region.left, region.right ]
+      const dir = diff < 0 ? -1 : 1
+
+      const ranges = this.reorderCellRanges
+
+      ranges.some((range, index) => {
+        const thisDir = index > dragIndex ? 1 : -1
+
+        if (thisDir != dir || index === dragIndex) {
+          return false
+        }
+
+        console.log('thisDir', thisDir);
+
+        const halfSize = (range[1] - range[0]) / 2
+
+        const currentDir = dragRange[0] < range[0] ? 1 : -1
+        const overlap = currentDir ?
+          dragRange[1] - range[0] :
+          range[1] - dragRange[0]
+
+        console.log('currentDir, index, range, dir, overlap', currentDir, index, range, dir, overlap);
+
+        if (overlap >= halfSize) {
+          const cell = cells[index]
+          const offset = - dir * initialRegion.width
+          console.log('offset', offset);
+          cell.setLeft(offset)
+          ranges[index] = [range[0] + offset, range[1] + offset]
+          return true
+        }
+      })
+
+
+    }
+  }
+
+  renderReorderPlaceholder() {
+    const header = this.state.columnDrag ?
+      this.renderScroller({
+        headerOnly: true,
+        resizable: false,
+        withScrollbar: false,
+        onMount: this.onPlaceholderColumnGroupMount,
+        className: 'react-datagrid__scroller--header-only'
+      }) :
+      null
+
+    return <div
+      ref={this.refReorderPlaceholder}
+      className="react-datagrid__column-reorder-placeholder"
+      children={header}
+    />
+  }
+
+  renderScroller({
+    ref,
+    headerOnly,
+    className,
+    withScrollbar = true,
+    resizable = this.p.resizable,
+    onMount
+  } = emptyObject) {
     if (!this.props.data) {
       return null
     }
 
     return <Scroller
-      ref={this.refScroller}
+      ref={ref === undefined ? this.refScroller : ref}
       contentHeight={this.p.contentHeight}
       headerHeight={this.p.headerHeight}
       onScroll={this.onScroll}
@@ -224,12 +366,15 @@ class Body extends Component {
       toggleIsScrolling={this.toggleIsScrolling}
       maxScrollTop={this.p.maxScrollTop}
       hasScroll={this.p.hasScroll}
+      renderScrollbar={!headerOnly}
+      className={className}
+      withScrollbar={withScrollbar}
     >
-      {this.renderColumnGroups()}
+      {this.renderColumnGroups({ headerOnly, resizable, onMount })}
     </Scroller>
   }
 
-  renderColumnGroups() {
+  renderColumnGroups({ headerOnly, resizable = this.p.resizable, onMount } = emptyObject) {
     const preparedProps = this.p
     const {
       data,
@@ -260,7 +405,6 @@ class Body extends Component {
       header,
       onHeaderCellClick,
       onHeaderSortClick,
-      resizable,
       isMultiSort,
       sortable,
       sortInfo,
@@ -290,6 +434,7 @@ class Body extends Component {
 
     // only send to columngroup the prop that it needs to know about
     const columnGroupProps = {
+      onMount,
       data,
       rowHeight,
       isMultiselect,
@@ -330,6 +475,7 @@ class Body extends Component {
       onRowClick,
       overRowId: this.state.overRowId,
       onScroll: onColumnGroupScroll,
+      headerOnly
     }
 
     /**
@@ -398,11 +544,18 @@ class Body extends Component {
   }
 
   onHeaderCellMouseDown(headerProps, event) {
-      setupColumnDrag({
-        headerNode: findDOMNode(this.header),
-        headerCellNodes: this.header.getCellDOMNodes(),
-        index: headerProps.index
-      }, event)
+    if (event && event.preventDefault) {
+      event.preventDefault()
+    }
+
+    if (this.state.columnDrag) {
+      return
+    }
+
+    this.setState({
+      columnDrag: true,
+      columnDragIndex: headerProps.absoluteIndex
+    })
   }
 
   setBodyHeight(offset) {

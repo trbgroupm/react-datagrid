@@ -2,6 +2,7 @@ import React, { PropTypes } from 'react'
 import Component from 'react-class'
 import { Flex } from 'react-flex'
 import DragHelper from 'drag-helper'
+import join from '../../join'
 
 const IS_MAC = global && global.navigator && global.navigator.appVersion &&
   global.navigator.appVersion.indexOf('Mac') != -1
@@ -25,8 +26,11 @@ class Scroller extends Component {
       scrollTop,
       height,
       scrollbarWidth,
-      hasScroll
+      hasScroll,
+      withScrollbar
     } = props
+
+    const renderScrollbar = hasScroll && withScrollbar
 
     const scrollContentStyle = {
       height: contentHeight
@@ -36,7 +40,6 @@ class Scroller extends Component {
       // maxHeight: height,
       // minHeight: height, // needed for ie
     }
-
 
     if (hasScroll) {
       contentStyle.maxWidth = `calc(100% - ${scrollbarWidth}px)`
@@ -55,7 +58,10 @@ class Scroller extends Component {
       row
       wrap={false}
       alignItems="stretch"
-      className="react-datagrid__scroller"
+      className={join(
+        'react-datagrid__scroller',
+        this.props.className
+      )}
     >
       <Flex
         flex={1}
@@ -63,14 +69,14 @@ class Scroller extends Component {
         alignItems="stretch"
         wrap={false}
         ref="viewport"
-        onWheel={this.onWheel}
-        onTouchStart={this.onTouchStart}
+        onWheel={renderScrollbar && this.onWheel}
+        onTouchStart={renderScrollbar && this.onTouchStart}
         style={contentStyle}
       >
         {props.children}
       </Flex>
       {
-        hasScroll
+        renderScrollbar
         &&
         <div
           ref="scrollbar"
@@ -93,7 +99,8 @@ class Scroller extends Component {
   // - onTouch
   // - onScroll by scrollbar
   onScroll(scrollTop, event){
-    if (!this.props.hasScroll) {
+    const hasScroll  = this.props.hasScroll && this.props.withScrollbar
+    if (!hasScroll) {
       return
     }
 
@@ -136,6 +143,8 @@ class Scroller extends Component {
         &&
         this.props.hasScroll
         &&
+        this.props.withScrollbar
+        &&
         newScrollTop < maxScrollTop
         &&
         newScrollTop > 0
@@ -172,7 +181,7 @@ class Scroller extends Component {
   }
 
   scrollAt(scrollTop){
-    if (this.props.hasScroll) {
+    if (this.props.hasScroll && this.props.withScrollbar) {
       this.refs.scrollbar.scrollTop = this.normalizeScrollTop(scrollTop)
     }
   }
@@ -194,7 +203,8 @@ class Scroller extends Component {
 }
 
 Scroller.defaultProps = {
-  scrollStep: IS_FIREFOX? 40 : 1
+  scrollStep: IS_FIREFOX? 40 : 1,
+  withScrollbar: true
 }
 
 Scroller.propTypes = {

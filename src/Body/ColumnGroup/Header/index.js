@@ -22,7 +22,7 @@ export default class Header extends Component {
 
   prepareStyle(props) {
     const { width, minWidth, maxWidth, index } = props
-    let { style } = props
+    let { style = {} } = props
 
     if (width || minWidth) {
       style = assign({}, props.style)
@@ -40,7 +40,7 @@ export default class Header extends Component {
       style.maxWidth = maxWidth
     }
 
-    style.zIndex = style.zIndex || (100 - index)
+    style.zIndex = style.zIndex || (100 - (index || 0))
 
     return style
   }
@@ -130,11 +130,15 @@ export default class Header extends Component {
   onCellMount(props, cell) {
     this.cells = this.cells || []
 
-    this.cells[props.index] = findDOMNode(cell)
+    this.cells[props.index] = cell
+  }
+
+  getCells() {
+    return this.cells
   }
 
   getCellDOMNodes() {
-    return this.cells
+    return this.cells.map(findDOMNode)
   }
 }
 

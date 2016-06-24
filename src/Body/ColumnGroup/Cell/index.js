@@ -15,18 +15,34 @@ const headerBem = bemFactory('react-datagrid__column-header')
 import RENDER_HEADER from './renderHeader'
 
 export default class Cell extends Component {
+
+  constructor(props) {
+    super(props)
+
+    if (props.headerCell) {
+      this.state = {
+        left: 0
+      }
+    }
+  }
   componentDidMount() {
     if (this.props.onMount) {
       this.props.onMount(this.props, this)
     }
   }
 
-  shouldComponentUpdate(nextProps) {
+  shouldComponentUpdate(nextProps, nextState) {
     if (typeof nextProps.shouldComponentUpdate === 'function') {
       return nextProps.shouldComponentUpdate(nextProps, this.props)
     }
 
-    return !shallowequal(nextProps, this.props)
+    const equalProps = shallowequal(nextProps, this.props)
+
+    const equal = this.state ?
+      equalProps && shallowequal(nextState, this.state) :
+      equalProps
+
+    return !equal
   }
 
   prepareStyle(props) {
@@ -62,6 +78,11 @@ export default class Cell extends Component {
       style.minWidth = style.maxWidth = style.width = width
     }
 
+    if (this.state && this.state.left) {
+      style.left = this.state.left
+      style.position = style.position || 'relative'
+    }
+
     return style
   }
 
@@ -88,6 +109,7 @@ export default class Cell extends Component {
       className = join(
         className,
         props.titleClassName,
+        this.state && this.state.dragging && `${baseClassName}--dragging`,
         props.sortable && `${baseClassName}--sortable`,
         props.resizable && `${baseClassName}--resizable`,
         props.lastInGroup && `${baseClassName}--last-in-group`
@@ -95,6 +117,18 @@ export default class Cell extends Component {
     }
 
     return className
+  }
+
+  setDragging(dragging) {
+    this.setState({
+      dragging
+    })
+  }
+
+  setLeft(left) {
+    this.setState({
+      left
+    })
   }
 
   render() {
@@ -176,6 +210,7 @@ export default class Cell extends Component {
 
   onMouseDown(event) {
     this.props.onMouseDown(this.props, event)
+    event.stopPropagation()
   }
 
   onResizeMouseDown(cellProps, event) {

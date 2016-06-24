@@ -11,12 +11,57 @@ import getColumnsInfo from '../../utils/getColumnsInfo'
 import InnerWrapper from './InnerWrapper'
 import Header from './Header'
 
+export const renderHeader = function (props, { minWidth, maxWidth, onResize, onResizeMouseDown } = {}) {
+  props = props || this.props
+
+  if (minWidth === undefined && maxWidth === undefined) {
+    const columnInfo = getColumnsInfo(props.columns)
+    minWidth = columnInfo.minWidth
+    maxWidth = columnInfo.maxWidth
+  }
+
+  const {
+    header,
+    columns,
+    isMultiSort,
+    sortable,
+    sortInfo,
+    resizable,
+    index,
+    data
+  } = props
+
+  return header && <Header
+    ref={this.refHeader}
+    index={index}
+    data={data}
+    columns={columns}
+    minWidth={minWidth}
+    maxWidth={maxWidth}
+    onCellClick={props.onHeaderCellClick}
+    onSortClick={props.onHeaderSortClick}
+    isMultiSort={isMultiSort}
+    sortable={sortable}
+    sortInfo={sortInfo}
+    resizable={resizable}
+    onResize={onResize || this.onResize}
+    onMouseDown={props.onHeaderCellMouseDown}
+    onResizeMouseDown={onResizeMouseDown || this.onResizeMouseDown}
+  />
+}
+
 export default class ColumnGroup extends Component {
 
   constructor(props) {
     super(props)
 
     this.refHeader = (h) => { this.header = h }
+  }
+
+  componentDidMount() {
+    if (this.props.onMount) {
+      this.props.onMount(this)
+    }
   }
 
   shouldComponentUpdate(nextProps) {
@@ -27,22 +72,17 @@ export default class ColumnGroup extends Component {
     return !shallowequal(nextProps, this.props)
   }
 
+  renderHeader(...args) {
+    return renderHeader.apply(this, args)
+  }
+
   render() {
     const props = this.props
     const {
-      viewportHeight,
       width,
       fixed,
       innerWrapperOffset,
-      header,
-      columns,
-      isMultiSort,
-      sortable,
-      sortInfo,
-      resizable,
-      columnMinWidth,
-      index,
-      data
+      columns
     } = props
 
     let flex = props.flex
@@ -88,26 +128,8 @@ export default class ColumnGroup extends Component {
       data={null}
       onScroll={this.onScroll}
     >
-      {
-        header && <Header
-          ref={this.refHeader}
-          index={index}
-          data={data}
-          columns={columns}
-          minWidth={minWidth}
-          maxWidth={maxWidth}
-          onCellClick={props.onHeaderCellClick}
-          onSortClick={props.onHeaderSortClick}
-          isMultiSort={isMultiSort}
-          sortable={sortable}
-          sortInfo={sortInfo}
-          resizable={resizable}
-          onResize={this.onResize}
-          onMouseDown={this.props.onHeaderCellMouseDown}
-          onResizeMouseDown={this.onResizeMouseDown}
-        />
-      }
-      <div className="react-datagrid__column-group__body">
+      {this.renderHeader(props, { minWidth, maxWidth })}
+      {!this.props.headerOnly && <div className="react-datagrid__column-group__body">
         <div
           className="react-datagrid__column-group__body__inner-wrapper"
           style={innerWrapperStyle}
@@ -121,6 +143,7 @@ export default class ColumnGroup extends Component {
           />
         </div>
       </div>
+      }
     </Item>
   }
 

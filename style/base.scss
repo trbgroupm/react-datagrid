@@ -62,6 +62,19 @@
   }
 }
 
+.react-datagrid__column-reorder-placeholder {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 100%;
+
+  // & > * {
+  //   position: absolute !important;
+  //   top: 0px !important;
+  //   z-index: 100;
+  // }
+}
+
 .react-datagrid__column-group__body {
 }
 
@@ -71,8 +84,19 @@
 
 /*----------  Scroller  ----------*/
 .react-datagrid__scroller {
-  overflow: hidden;
   position: relative;
+}
+.react-datagrid__scroller--header-only {
+  z-index: 100;
+  cursor: grabbing;
+  cursor: move;
+  user-select: none;
+  .react-datagrid__column-group {
+    overflow: visible;
+  }
+}
+.react-datagrid__scroller:not(.react-datagrid__scroller--header-only) {
+  overflow: hidden;
   max-width: 100%;
   min-width: 100%;
 }

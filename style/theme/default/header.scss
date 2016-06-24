@@ -39,10 +39,16 @@
 
 // styles for the header of a single column
 .react-datagrid__column-header {
+  background: $HEADER_BG;
   padding: 10px 5px;
 
   border-right: 1px solid $HEADER_BORDER_COLOR;
   line-height: 1.6;
+
+  &--dragging {
+    opacity: 0.5;
+    z-index: 100;
+  }
 
   &--sortable {
     user-select: none;
